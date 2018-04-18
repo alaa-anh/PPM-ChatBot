@@ -155,17 +155,17 @@ namespace PM.BotApplication.Dialogs
                 else
                 {
                     await context.PostAsync(new Common.ProjectServerTeam(userName, password).GetMSProjects(context, itemStartIndex, showCompletion, Pdate, pDuration, pPM, out Counter));
-                    await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
+                    //await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
 
-                    if (Counter > 10)
-                    {
-                        if (Counter > 100)
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
-                        else
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
+                    //if (Counter > 10)
+                    //{
+                    //    if (Counter > 100)
+                    //        await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
+                    //    else
+                    //        await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
 
-                        await context.PostAsync(new Common.ProjectServerTeam(userName, password).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
-                    }
+                    //    await context.PostAsync(new Common.ProjectServerTeam(userName, password).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+                    //}
                 }
             }
             else
