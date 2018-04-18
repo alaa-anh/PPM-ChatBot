@@ -19,6 +19,7 @@ namespace PM.BotApplication.Dialogs
         {
             var activity = await result as Activity;
 
+
             // calculate something for us to return
             int length = (activity.Text ?? string.Empty).Length;
 
