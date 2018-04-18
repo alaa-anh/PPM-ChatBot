@@ -378,19 +378,19 @@ namespace PM.BotApplication.Dialogs
                 if (luisResult.TryFindEntity("builtin.datetimeV2.daterange", out dateRangeEntity))
                 {
                     filterDate = dateRangeEntity.Resolution.Values.Select(x => x).OfType<List<object>>().SelectMany(i => i).FirstOrDefault();
-                    //if (Common.TokenHelper.Datevalues(filterDate, "Mod") != "")
-                    //{
-                    //    FilterType = Common.TokenHelper.Datevalues(filterDate, "Mod");
-                    //    ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "timex");
+                    if (Common.TokenHelper.Datevalues(filterDate, "Mod") != "")
+                    {
+                        FilterType = Common.TokenHelper.Datevalues(filterDate, "Mod");
+                        ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "timex");
 
-                    //}
-                    //else
-                    //{
-                    //    FilterType = "Between";
+                    }
+                    else
+                    {
+                        FilterType = "Between";
 
-                    //    ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "start");
-                    //}
-                    //ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "end");
+                        ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "start");
+                    }
+                    ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "end");
 
                 }
 
@@ -554,7 +554,7 @@ namespace PM.BotApplication.Dialogs
             password = response;
 
 
-            string UserLoggedInName = "";// TokenHelper.checkAuthorizedUser(userName, password);
+            string UserLoggedInName = TokenHelper.checkAuthorizedUser(userName, password);
 
             if (UserLoggedInName != string.Empty)
             {
