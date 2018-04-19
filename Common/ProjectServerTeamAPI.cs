@@ -8,6 +8,7 @@ using Microsoft.SharePoint.Client;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
 using Newtonsoft.Json.Linq;
+using System.Net;
 
 namespace Common
 {
@@ -44,51 +45,45 @@ namespace Common
             string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName%20eq%20%27" + _userLoggedInName + "%27";
             Uri endpointUri = null;
             int ProjectCounter = 0;
-            //using (var client = new WebClient())
-            //{
-            //    client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
-            //    client.Credentials = credentials;
-            //    client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
-            //    client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
+            using (var client = new WebClient())
+            {
+                client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
+                client.Credentials = credentials;
+                client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
+                //    if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
+                //    {
+                //        endpointUri = new Uri(webUri + PMAPI);
+                //        var responce = client.DownloadString(endpointUri);
+                //        var t = JToken.Parse(responce);
+                //        JObject results = JObject.Parse(t["d"].ToString());
+
+
+                //        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                //        reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
 
 
+                //    }
+                //    else
+                //    {
+                //        endpointUri = new Uri(webUri + AdminAPI);
+                //        var responce = client.DownloadString(endpointUri);
+                //        var t = JToken.Parse(responce);
+                //        JObject results = JObject.Parse(t["d"].ToString());
 
 
+                //        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                //        reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
-            //    if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
-            //    {
-            //        endpointUri = new Uri(webUri + PMAPI);
-            //        var responce = client.DownloadString(endpointUri);
-            //        var t = JToken.Parse(responce);
-            //        JObject results = JObject.Parse(t["d"].ToString());
+                //        // reply = GetAllProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
+                //    }
 
-            //        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-            //        reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                
 
 
-
-            //    }
-            //    else
-            //    {
-            //        endpointUri = new Uri(webUri + AdminAPI);
-            //        var responce = client.DownloadString(endpointUri);
-            //        var t = JToken.Parse(responce);
-            //        JObject results = JObject.Parse(t["d"].ToString());
-
-
-            //        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-            //        reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-
-            //        // reply = GetAllProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-
-            //    }
-
-            //    Counter = ProjectCounter;
-
-
-            //}
+            }
 
             HeroCard plCard = new HeroCard()
             {
@@ -97,6 +92,7 @@ namespace Common
             };
             reply.Attachments.Add(plCard.ToAttachment());
 
+            Counter = ProjectCounter;
             return reply;
         }
 
