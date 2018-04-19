@@ -443,21 +443,21 @@ namespace PM.BotApplication.Dialogs
                 }
                 else
                 {
-                    IMessageActivity messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetResourceAssignments(context, itemStartIndex, searchTerm_ResourceName, out Counter);
-                    if (messageActivity.Attachments.Count > 0)
-                    {
-                        await context.PostAsync(messageActivity);
-                    }
-                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, "UserAssignments"));
+                    //IMessageActivity messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetResourceAssignments(context, itemStartIndex, searchTerm_ResourceName, out Counter);
+                    //if (messageActivity.Attachments.Count > 0)
+                    //{
+                    //    await context.PostAsync(messageActivity);
+                    //}
+                    //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, "UserAssignments"));
 
-                    if (Counter > 10)
-                    {
-                        if (Counter > 100)
-                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
-                        else
-                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
-                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, "FilterByDate", ""));
-                    }
+                    //if (Counter > 10)
+                    //{
+                    //    if (Counter > 100)
+                    //        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
+                    //    else
+                    //        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
+                    //    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, "FilterByDate", ""));
+                    //}
                 }
             }
             else
