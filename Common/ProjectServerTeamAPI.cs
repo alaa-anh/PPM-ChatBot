@@ -496,7 +496,7 @@ namespace Common
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
-            string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27";
+            string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&";
             Uri endpointUri = null;
             int TaskCounter = 0;
             using (var client = new WebClient())
@@ -767,29 +767,38 @@ namespace Common
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
 
             int inDexToVal = SIndex + 10;
-            Counter = jArrays.Count;
+            Counter = 0;
             if (inDexToVal >= jArrays.Count)
                 inDexToVal = jArrays.Count;
 
             if (jArrays.Count > 0)
             {
-                for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+                for (int startIndex = SIndex; startIndex < jArrays.Count; startIndex++)
                 {
                     var tsk = jArrays[startIndex];
-                    var SubtitleVal = "";
-                    string TaskName = (string)tsk["TaskName"];
-                    string TaskPercentCompleted = (string)tsk["TaskPercentCompleted"];
-                    string TaskStartDate = (string)tsk["TaskStartDate"];
-                    string TaskFinishDate = (string)tsk["TaskFinishDate"];
-                    SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
-                    SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
-                    SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
-                    HeroCard plCard = new HeroCard()
+
+                    if ((string)tsk["TaskDuration"] == "0.000000")
                     {
-                        Title = TaskName,
-                        Subtitle = SubtitleVal
-                    };
-                    reply.Attachments.Add(plCard.ToAttachment());
+                        // string TaskDuration = (string)tsk["TaskDuration"];
+                        Counter++;
+                        var SubtitleVal = "";
+                        string TaskName = (string)tsk["TaskName"];
+                        string TaskPercentCompleted = (string)tsk["TaskPercentCompleted"];
+                        string TaskStartDate = (string)tsk["TaskStartDate"];
+                        string TaskFinishDate = (string)tsk["TaskFinishDate"];
+                        SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
+                        SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
+                        SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = TaskName,
+                            Subtitle = SubtitleVal
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+                    }
+
+                    if (Counter == 10)
+                        break;
                 }
             }
             return reply;

@@ -168,7 +168,7 @@ namespace PM.BotApplication.Dialogs
                         else
                             await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
 
-                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+                        //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
                     }
                 }
             }
@@ -309,7 +309,7 @@ namespace PM.BotApplication.Dialogs
                                 await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, ListName, searchTerm_ProjectName, ""));
                             else
                                 await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
-                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
+                            //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
                         }
 
                     }
@@ -393,7 +393,7 @@ namespace PM.BotApplication.Dialogs
                                 await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, "FilterByDate", "", luisResult.Query));
                             else
                                 await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, "FilterByDate", "", luisResult.Query));
-                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, "FilterByDate", ""));
+                            //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, "FilterByDate", ""));
                         }
 
 
@@ -508,7 +508,7 @@ namespace PM.BotApplication.Dialogs
                             await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
                         else
                             await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
-                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+                        //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
                     }
                 }
             }
