@@ -115,13 +115,7 @@ namespace Common
             }
             return exist;
         }
-
-       
-        
-
-
-
-        public IMessageActivity GetAllProjects(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
+       public IMessageActivity GetAllProjects(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
         {
             IMessageActivity reply = null;
             reply = context.MakeMessage();
@@ -258,6 +252,102 @@ namespace Common
 
             }
 
+            return reply;
+        }
+
+        public IMessageActivity GetProjectTasks(IDialogContext dialogContext, int itemStartIndex, string pName, bool Completed, bool NotCompleted, bool delayed, out int Counter)
+        {
+            IMessageActivity reply = null;
+            reply = dialogContext.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            Counter = 0;
+
+            SecureString passWord = new SecureString();
+            foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+            SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+            var webUri = new Uri(_siteUri);
+            string PMAPI = "";
+           
+
+            Uri endpointUri = null;
+            int TaskCounter = 0;
+            using (var client = new WebClient())
+            {
+                client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
+                client.Credentials = credentials;
+                client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
+
+
+                if (Completed == true)
+                {
+                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&TaskPercentCompleted%20eq%201";
+                }
+                else if (NotCompleted == true)
+                {
+                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&TaskPercentCompleted%20Nq%201";
+                }
+                else if (delayed == true)
+                {
+                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&ActualDuration%20lt%20ScheduledDuration";
+                }
+                else
+                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27";
+
+                if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
+                {
+                   // reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
+                }
+                else 
+                {
+                    endpointUri = new Uri(webUri + PMAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllTasks(dialogContext, itemStartIndex, jArrays, Completed, NotCompleted, delayed, out TaskCounter);                  
+                }
+               
+            }
+        
+            Counter = TaskCounter;
+            return reply;
+        }
+
+        private IMessageActivity GetAllTasks(IDialogContext dialogContext, int SIndex, List<JToken> jArrays, bool Completed, bool NotCompleted, bool delayed, out int Counter)
+        {
+            IMessageActivity reply = null;
+            reply = dialogContext.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+
+            int inDexToVal = SIndex + 10;
+            Counter = jArrays.Count;
+            if (inDexToVal >= jArrays.Count)
+                inDexToVal = jArrays.Count;
+
+            if (jArrays.Count > 0)
+            {
+                for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+                {
+                    var tsk = jArrays[startIndex];
+                    var SubtitleVal = "";
+                    string TaskName = (string)tsk["TaskName"];
+                    string TaskDuration = (string)tsk["TaskDuration"];
+                    string TaskPercentCompleted = (string)tsk["TaskPercentCompleted"];
+                    string TaskStartDate = (string)tsk["TaskStartDate"];
+                    string TaskFinishDate = (string)tsk["TaskFinishDate"];
+                    SubtitleVal += "Task Duration\n" + TaskDuration + "</br>";
+                    SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
+                    SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
+                    SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
+                    HeroCard plCard = new HeroCard()
+                    {
+                        Title = TaskName,
+                        Subtitle = SubtitleVal
+                    };
+                    reply.Attachments.Add(plCard.ToAttachment());
+                }
+            }
             return reply;
         }
 
@@ -669,55 +759,6 @@ namespace Common
             return reply;
         }
 
-        public IMessageActivity GetProjectTasks(IDialogContext dialogContext, int itemStartIndex, string pName, bool Completed, bool NotCompleted, bool delayed, out int Counter)
-        {
-            IMessageActivity reply = null;
-            reply = dialogContext.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-
-            int TaskCounter = 0;
-            using (ProjectContext context = new ProjectContext(_siteUri))
-            {
-                SecureString passWord = new SecureString();
-                foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
-                context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-                PublishedProject project = GetProjectByName(pName, context);
-
-
-                if (project != null)
-                {
-                    context.Load(project.Tasks);
-                    context.ExecuteQuery();
-                    PublishedTaskCollection publishedTask = project.Tasks;
-                    if (project.Tasks.Count > 0)
-                    {
-                        if (GetUserGroup(context, "Team Members (Project Web App Synchronized)") || GetUserGroup(context, "Team Leads for Project Web App"))
-                        {
-                            reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
-                        }
-                        else if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
-                        {
-                            context.Load(project.Owner);
-                            context.ExecuteQuery();
-                            if (project.Owner.Email == _userName) // if the logged in user is a project manager on this project
-                            {
-                                reply = GetAllTasks(dialogContext, itemStartIndex, publishedTask, project, Completed, NotCompleted, delayed, out TaskCounter);
-                            }
-                            else
-                            {
-                                reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
-                            }
-                        }
-                        else if (GetUserGroup(context, "Web Administrators (Project Web App Synchronized)") || GetUserGroup(context, "Administrators for Project Web App") || GetUserGroup(context, "Portfolio Managers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Resource Managers for Project Web App"))
-                        {
-                            reply = GetAllTasks(dialogContext, itemStartIndex, publishedTask, project, Completed, NotCompleted, delayed, out TaskCounter);
-                        }
-                    }
-                }
-            }
-            Counter = TaskCounter;
-            return reply;
-        }
 
         public IMessageActivity GetProjectIssues(IDialogContext dialogContext, int itemStartIndex, string pName, out int Counter)
         {
@@ -1271,175 +1312,6 @@ namespace Common
             return reply;
         }
 
-        private IMessageActivity GetAllTasks(IDialogContext dialogContext, int SIndex, PublishedTaskCollection tskcoll, PublishedProject project, bool Completed, bool NotCompleted, bool delayed, out int Counter)
-        {
-            IMessageActivity reply = null;
-            reply = dialogContext.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-
-
-            int inDexToVal = SIndex + 10;
-            Counter = project.Tasks.Count;
-            if (inDexToVal >= project.Tasks.Count)
-                inDexToVal = project.Tasks.Count;
-
-            tskcoll = project.Tasks;
-
-
-
-            if (tskcoll.Count > 0)
-            {
-                if (Completed == true)
-                {
-                    IEnumerable<PublishedTask> completedlist = project.Tasks.Where(p => p.PercentComplete == 100).ToList();
-                    if (completedlist.Count() > 0)
-                    {
-                        inDexToVal = SIndex + 10;
-                        Counter = completedlist.Count();
-                        if (inDexToVal >= completedlist.Count())
-                            inDexToVal = completedlist.Count();
-
-                        int startIndex = SIndex;
-                        foreach (PublishedTask tsk in completedlist)
-                        {
-                            if (startIndex >= inDexToVal)
-                                break;
-                            var SubtitleVal = "";
-                            string TaskName = tsk.Name;
-                            string TaskDuration = tsk.Duration;
-                            string TaskPercentCompleted = tsk.PercentComplete.ToString();
-                            string TaskStartDate = tsk.Start.ToString();
-                            string TaskFinishDate = tsk.Finish.ToString();
-
-                            SubtitleVal += "Task Duration\n" + TaskDuration + "</br>";
-                            SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
-                            SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
-                            SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
-
-                            HeroCard plCard = new HeroCard()
-                            {
-                                Title = TaskName,
-                                Subtitle = SubtitleVal
-                            };
-
-                            reply.Attachments.Add(plCard.ToAttachment());
-                            startIndex++;
-
-                        }
-                    }
-                }
-                else if (NotCompleted == true)
-                {
-                    IEnumerable<PublishedTask> completedlist = project.Tasks.Where(p => p.PercentComplete < 100).ToList();
-                    if (completedlist.Count() > 0)
-                    {
-                        inDexToVal = SIndex + 10;
-                        Counter = completedlist.Count();
-                        if (inDexToVal >= completedlist.Count())
-                            inDexToVal = completedlist.Count();
-
-                        int startIndex = SIndex;
-                        foreach (PublishedTask tsk in completedlist)
-                        {
-                            if (startIndex >= inDexToVal)
-                                break;
-                            var SubtitleVal = "";
-                            string TaskName = tsk.Name;
-                            string TaskDuration = tsk.Duration;
-                            string TaskPercentCompleted = tsk.PercentComplete.ToString();
-                            string TaskStartDate = tsk.Start.ToString();
-                            string TaskFinishDate = tsk.Finish.ToString();
-
-                            SubtitleVal += "Task Duration\n" + TaskDuration + "</br>";
-                            SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
-                            SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
-                            SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
-
-                            HeroCard plCard = new HeroCard()
-                            {
-                                Title = TaskName,
-                                Subtitle = SubtitleVal
-                            };
-
-                            reply.Attachments.Add(plCard.ToAttachment());
-                            startIndex++;
-
-                        }
-                    }
-                }
-                else if (delayed == true)
-                {
-                    IEnumerable<PublishedTask> completedlist = project.Tasks.Where(p => p.ActualDuration == p.ScheduledDuration).ToList();
-                    if (completedlist.Count() > 0)
-                    {
-                        inDexToVal = SIndex + 10;
-                        Counter = completedlist.Count();
-                        if (inDexToVal >= completedlist.Count())
-                            inDexToVal = completedlist.Count();
-
-                        int startIndex = SIndex;
-                        foreach (PublishedTask tsk in completedlist)
-                        {
-                            if (startIndex >= inDexToVal)
-                                break;
-                            var SubtitleVal = "";
-                            string TaskName = tsk.Name;
-                            string TaskDuration = tsk.Duration;
-                            string TaskPercentCompleted = tsk.PercentComplete.ToString();
-                            string TaskStartDate = tsk.Start.ToString();
-                            string TaskFinishDate = tsk.Finish.ToString();
-
-                            SubtitleVal += "Task Duration\n" + TaskDuration + "</br>";
-                            SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
-                            SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
-                            SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
-
-                            HeroCard plCard = new HeroCard()
-                            {
-                                Title = TaskName,
-                                Subtitle = SubtitleVal
-                            };
-
-                            reply.Attachments.Add(plCard.ToAttachment());
-                            startIndex++;
-
-                        }
-                    }
-                }
-                else
-                {
-
-                    for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
-                    {
-                        var SubtitleVal = "";
-                        PublishedTask tsk = tskcoll[startIndex];
-                        string TaskName = tsk.Name;
-                        string TaskDuration = tsk.Duration;
-                        string TaskPercentCompleted = tsk.PercentComplete.ToString();
-                        string TaskStartDate = tsk.Start.ToString();
-                        string TaskFinishDate = tsk.Finish.ToString();
-
-
-
-                        SubtitleVal += "Task Duration\n" + TaskDuration + "</br>";
-                        SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
-                        SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
-                        SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
-
-                        HeroCard plCard = new HeroCard()
-                        {
-                            Title = TaskName,
-                            Subtitle = SubtitleVal
-                        };
-
-                        reply.Attachments.Add(plCard.ToAttachment());
-                    }
-                }
-
-            }
-
-            return reply;
-        }
 
         private IMessageActivity GetProjectMilestones(IDialogContext dialogContext, int SIndex, PublishedTaskCollection tskcoll, PublishedProject project, out int Counter)
         {
