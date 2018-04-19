@@ -45,6 +45,7 @@ namespace Common
             string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName%20eq%20%27" + _userLoggedInName + "%27";
             Uri endpointUri = null;
             int ProjectCounter = 0;
+            bool isvalid = false;
             using (var client = new WebClient())
             {
                 client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
@@ -52,6 +53,7 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
+                isvalid = GetUserGroup("Project Managers (Project Web App Synchronized)");
                 if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
                     endpointUri = new Uri(webUri + PMAPI);
@@ -88,7 +90,7 @@ namespace Common
 
             HeroCard plCard = new HeroCard()
             {
-                Title = "Test final",
+                Title = _userName + "__" + _userLoggedInName +"__"+ isvalid,
                 
             };
             reply.Attachments.Add(plCard.ToAttachment());
