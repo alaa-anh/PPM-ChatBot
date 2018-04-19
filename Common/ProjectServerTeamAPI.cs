@@ -45,7 +45,7 @@ namespace Common
             string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName%20eq%20%27" + _userLoggedInName + "%27";
             Uri endpointUri = null;
             int ProjectCounter = 0;
-            bool isvalid = false;
+            int isvalid = 0;
             using (var client = new WebClient())
             {
                 client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
@@ -53,7 +53,7 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
-                isvalid = GetUserGroup("Project Managers (Project Web App Synchronized)");
+                isvalid = GetUserGroupTest("Project Managers (Project Web App Synchronized)");
                 if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
                     endpointUri = new Uri(webUri + PMAPI);
@@ -99,6 +99,48 @@ namespace Common
             return reply;
         }
 
+        public int GetUserGroupTest(string groupName)
+        {
+            bool exist = false;
+            int count = 0;
+            using (ProjectContext context = new ProjectContext(_siteUri))
+            {
+                SecureString passWord = new SecureString();
+                foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+                context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+                context.Load(context.Web);
+                context.ExecuteQuery();
+
+                Web web = context.Web;
+
+                IEnumerable<User> user = context.LoadQuery(web.SiteUsers.Where(p => p.Email == _userName));
+                context.ExecuteQuery();
+
+                count = user.Count();
+
+                //if (user.Any())
+                //{
+                //    User userLogged = user.FirstOrDefault();
+
+                //    context.Load(userLogged.Groups);
+                //    context.ExecuteQuery();
+
+                //    GroupCollection group = userLogged.Groups;
+
+                //    IEnumerable<Group> usergroup = context.LoadQuery(userLogged.Groups.Where(p => p.Title == groupName));
+                //    context.ExecuteQuery();
+                //    if (!usergroup.Any())
+                //    {
+                //        exist = false;
+                //    }
+                //    else
+                //        exist = true;
+                //}
+
+            }
+            return count;
+        }
+
         public bool GetUserGroup(string groupName)
         {
             bool exist = false;
@@ -107,39 +149,39 @@ namespace Common
                 SecureString passWord = new SecureString();
                 foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
                 context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-
                 context.Load(context.Web);
-
                 context.ExecuteQuery();
 
-                Web web = context.Web;
+                //Web web = context.Web;
 
-                IEnumerable<User> user = context.LoadQuery(web.SiteUsers.Where(p => p.Email == _userName));
-                context.ExecuteQuery();
+                //IEnumerable<User> user = context.LoadQuery(web.SiteUsers.Where(p => p.Email == _userName));
+                //context.ExecuteQuery();
 
-                if (user.Any())
-                {
-                    User userLogged = user.FirstOrDefault();
+                //if (user.Any())
+                //{
+                //    User userLogged = user.FirstOrDefault();
 
-                    context.Load(userLogged.Groups);
-                    context.ExecuteQuery();
+                //    context.Load(userLogged.Groups);
+                //    context.ExecuteQuery();
 
-                    GroupCollection group = userLogged.Groups;
+                //    GroupCollection group = userLogged.Groups;
 
-                    IEnumerable<Group> usergroup = context.LoadQuery(userLogged.Groups.Where(p => p.Title == groupName));
-                    context.ExecuteQuery();
-                    if (!usergroup.Any())
-                    {
-                        exist = false;
-                    }
-                    else
-                        exist = true;
-                }
+                //    IEnumerable<Group> usergroup = context.LoadQuery(userLogged.Groups.Where(p => p.Title == groupName));
+                //    context.ExecuteQuery();
+                //    if (!usergroup.Any())
+                //    {
+                //        exist = false;
+                //    }
+                //    else
+                //        exist = true;
+                //}
 
             }
             return exist;
         }
         
+
+
 
         public IMessageActivity GetAllProjects(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
         {
