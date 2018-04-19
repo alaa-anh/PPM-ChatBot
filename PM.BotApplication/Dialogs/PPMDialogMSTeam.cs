@@ -155,17 +155,17 @@ namespace PM.BotApplication.Dialogs
                 else
                 {
                     await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password , UserLoggedInName).GetMSProjects(context, itemStartIndex, showCompletion, Pdate, pDuration, pPM, out Counter));
-                    //await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
+                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password , UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
 
-                    //if (Counter > 10)
-                    //{
-                    //    if (Counter > 100)
-                    //        await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
-                    //    else
-                    //        await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
+                    if (Counter > 10)
+                    {
+                        if (Counter > 100)
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
+                        else
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
 
-                    //    await context.PostAsync(new Common.ProjectServerTeam(userName, password).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
-                    //}
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+                    }
                 }
             }
             else
@@ -236,7 +236,7 @@ namespace PM.BotApplication.Dialogs
                     if (luisResult.TryFindEntity("Project.Issues", out projectIssues))
                     {
                         ListName = Common.Enums.ListName.Issues.ToString();
-                        messageActivity = new Common.ProjectServerTeam(userName, password).GetProjectIssues(context, itemStartIndex, searchTerm_ProjectName, out Counter);
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectIssues(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                         //if (messageActivity.Attachments.Count > 0)
                         //{
                         //    await context.PostAsync(messageActivity);
@@ -251,12 +251,12 @@ namespace PM.BotApplication.Dialogs
                     if (luisResult.TryFindEntity("Project.Tasks", out projectTasks))
                     {
                         ListName = Common.Enums.ListName.Tasks.ToString();
-                        messageActivity = new Common.ProjectServerTeam(userName, password).GetProjectTasks(context, itemStartIndex, searchTerm_ProjectName, CompletedTaskV, NotCompletedTaskV, DelayedTaskV, out Counter);
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectTasks(context, itemStartIndex, searchTerm_ProjectName, CompletedTaskV, NotCompletedTaskV, DelayedTaskV, out Counter);
                     }
                     else if (luisResult.TryFindEntity("Project.Risks", out projectRisks))
                     {
                         ListName = Common.Enums.ListName.Risks.ToString();
-                        messageActivity = new Common.ProjectServerTeam(userName, password).GetProjectRisks(context, itemStartIndex, searchTerm_ProjectName, out Counter);
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectRisks(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                         //if (messageActivity.Attachments.Count > 0)
                         //{
                         //    await context.PostAsync(messageActivity);
@@ -270,7 +270,7 @@ namespace PM.BotApplication.Dialogs
                     else if (luisResult.TryFindEntity("Project.Deliverables", out projectDeliverables))
                     {
                         ListName = Common.Enums.ListName.Deliverables.ToString();
-                        messageActivity = new Common.ProjectServerTeam(userName, password).GetProjectDeliverables(context, itemStartIndex, searchTerm_ProjectName, out Counter);
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectDeliverables(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                         //if (messageActivity.Attachments.Count > 0)
                         //{
                         //    await context.PostAsync(messageActivity);
@@ -283,7 +283,7 @@ namespace PM.BotApplication.Dialogs
                     else if (luisResult.TryFindEntity("Project.Assignments", out projectAssignments))
                     {
                         ListName = Common.Enums.ListName.Assignments.ToString();
-                        messageActivity = new Common.ProjectServerTeam(userName, password).GetProjectAssignments(context, itemStartIndex, searchTerm_ProjectName, out Counter);
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectAssignments(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                         //if (messageActivity.Attachments.Count > 0)
                         //{
                         //    await context.PostAsync(messageActivity);
@@ -296,7 +296,7 @@ namespace PM.BotApplication.Dialogs
                     else if (luisResult.TryFindEntity("Project.Milestones", out projectMilestones))
                     {
                         ListName = Common.Enums.ListName.Milestones.ToString();
-                        messageActivity = new Common.ProjectServerTeam(userName, password).GetProjectMilestones(context, itemStartIndex, searchTerm_ProjectName, out Counter);
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectMilestones(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                     }
 
                     else if (ListName == "")
@@ -319,7 +319,7 @@ namespace PM.BotApplication.Dialogs
                         if (luisResult.TryFindEntity("Project.PM", out projectManager))
                             PMshow = true;
 
-                        await context.PostAsync(new Common.ProjectServerTeam(userName, password).GetProjectInfo(context, searchTerm_ProjectName, Pdate, pDuration, PCompletion, PMshow));
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectInfo(context, searchTerm_ProjectName, Pdate, pDuration, PCompletion, PMshow));
 
 
                     }
@@ -331,15 +331,15 @@ namespace PM.BotApplication.Dialogs
                         {
                             await context.PostAsync(messageActivity);
                         }
-                        await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, ListName));
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, ListName));
 
                         if (Counter > 10)
                         {
                             if (Counter > 100)
-                                await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, 100, ListName, searchTerm_ProjectName, ""));
+                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, ListName, searchTerm_ProjectName, ""));
                             else
-                                await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).DataSuggestions(context, ListName, searchTerm_ProjectName));
+                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
                         }
 
                     }
@@ -406,7 +406,7 @@ namespace PM.BotApplication.Dialogs
 
                 if (filterDate != null)
                 {
-                    IMessageActivity messageActivity = new Common.ProjectServerTeam(userName, password).FilterProjectsByDate(context, FilterType, ProjectSDate, ProjectEDate, ProjectSEdateFlag, out Counter);
+                    IMessageActivity messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterProjectsByDate(context, FilterType, ProjectSDate, ProjectEDate, ProjectSEdateFlag, out Counter);
 
 
                     if (messageActivity != null)
@@ -415,15 +415,15 @@ namespace PM.BotApplication.Dialogs
                         {
                             await context.PostAsync(messageActivity);
                         }
-                        await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, "FilterByDate"));
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, "FilterByDate"));
 
                         if (Counter > 10)
                         {
                             if (Counter > 100)
-                                await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, 100, "FilterByDate", "", luisResult.Query));
+                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, "FilterByDate", "", luisResult.Query));
                             else
-                                await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, Counter, "FilterByDate", "", luisResult.Query));
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).DataSuggestions(context, "FilterByDate", ""));
+                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, "FilterByDate", "", luisResult.Query));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, "FilterByDate", ""));
                         }
 
 
@@ -473,20 +473,20 @@ namespace PM.BotApplication.Dialogs
                 }
                 else
                 {
-                    IMessageActivity messageActivity = new Common.ProjectServerTeam(userName, password).GetResourceAssignments(context, itemStartIndex, searchTerm_ResourceName, out Counter);
+                    IMessageActivity messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetResourceAssignments(context, itemStartIndex, searchTerm_ResourceName, out Counter);
                     if (messageActivity.Attachments.Count > 0)
                     {
                         await context.PostAsync(messageActivity);
                     }
-                    await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, "UserAssignments"));
+                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, "UserAssignments"));
 
                     if (Counter > 10)
                     {
                         if (Counter > 100)
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, 100, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
                         else
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, Counter, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
-                        await context.PostAsync(new Common.ProjectServerTeam(userName, password).DataSuggestions(context, "FilterByDate", ""));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, "UserAssignments", searchTerm_ResourceName, luisResult.Query));
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, "FilterByDate", ""));
                     }
                 }
             }
@@ -520,7 +520,7 @@ namespace PM.BotApplication.Dialogs
                     completionpercentVal = int.Parse(completionVal.Entity.ToString());
 
 
-                IMessageActivity messageActivity = new Common.ProjectServerTeam(userName, password).FilterMSProjects(context, itemStartIndex, completionpercentVal, out Counter);
+                IMessageActivity messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, out Counter);
 
 
 
@@ -530,15 +530,15 @@ namespace PM.BotApplication.Dialogs
                     {
                         await context.PostAsync(messageActivity);
                     }
-                    await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
+                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
 
                     if (Counter > 10)
                     {
                         if (Counter > 100)
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
                         else
-                            await context.PostAsync(new Common.ProjectServerTeam(userName, password).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
-                        await context.PostAsync(new Common.ProjectServerTeam(userName, password).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
                     }
                 }
             }
