@@ -16,7 +16,7 @@ namespace Common
         private string _userPassword;
         private string _userNameAdmin = ConfigurationManager.AppSettings["DomainAdmin"];
         private string _userPasswordAdmin = ConfigurationManager.AppSettings["DomainAdminPassword"];
-
+        private static ProjectServer projSvr;
         private string _siteUri;
         public ProjectServerTeam(string userName, string password)
         {
@@ -35,7 +35,7 @@ namespace Common
             try
             {
 
-                using (ProjectContext context = new ProjectContext(_siteUri))
+                using (ClientContext context = new ClientContext(_siteUri))
                 {
                     //SecureString passWord = new SecureString();
                     //foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
@@ -44,7 +44,7 @@ namespace Common
                     SecureString passWord = new SecureString();
                     foreach (char c in _userPassword.ToCharArray()) passWord.AppendChar(c);
                     context.Credentials = new SharePointOnlineCredentials(_userName, passWord);
-
+                    projSvr = new ProjectServer(context);
 
 
                     int ProjectCounter = 0;
@@ -59,7 +59,7 @@ namespace Common
                     //}
                     //else if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
                     //{
-                    context.Load(context.Projects);
+                    context.Load(projSvr.Projects);
                     //context.ExecuteQuery();
                     //    //     ProjectCollection projectDetails = context.Projects;
                     //    //reply = GetAllProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
