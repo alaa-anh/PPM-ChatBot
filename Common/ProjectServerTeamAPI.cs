@@ -61,7 +61,7 @@ namespace Common
 
 
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                   // reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
                     HeroCard plCard = new HeroCard()
                     {
@@ -2684,9 +2684,9 @@ namespace Common
             using (ProjectContext context = new ProjectContext(_siteUri))
             {
                 SecureString passWord = new SecureString();
-                foreach (char c in _userPassword.ToCharArray()) passWord.AppendChar(c);
-                SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userName, passWord);
-                context.Credentials = new SharePointOnlineCredentials(_userName, passWord);
+                foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+                context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+
                 context.Load(context.Web);
                 context.ExecuteQuery();
 
