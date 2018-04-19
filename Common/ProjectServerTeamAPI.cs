@@ -45,7 +45,7 @@ namespace Common
             string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName%20eq%20%27" + _userLoggedInName + "%27";
             Uri endpointUri = null;
             int ProjectCounter = 0;
-            int isvalid = 10;
+            string isvalid;
             using (var client = new WebClient())
             {
                 client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
@@ -99,46 +99,33 @@ namespace Common
             return reply;
         }
 
-        public int GetUserGroupTest(string groupName)
+        public string GetUserGroupTest(string groupName)
         {
-            bool exist = false;
-            int count = 0;
-            using (ProjectContext context = new ProjectContext(_siteUri))
-            {
-                SecureString passWord = new SecureString();
-                foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
-                context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-                context.Load(context.Web);
-                context.ExecuteQuery();
+            string UserLoggedInName = string.Empty;
+                using (ProjectContext ctx = new ProjectContext(_siteUri))
+                {
 
-                Web web = context.Web;
+                    SecureString passWord = new SecureString();
+                    foreach (char c in _userPasswordAdmin) passWord.AppendChar(c);
+                    ctx.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
 
-                IEnumerable<User> user = context.LoadQuery(web.SiteUsers.Where(p => p.Email == _userName));
-                context.ExecuteQuery();
 
-                count = user.Count();
+                    var user = ctx.Web.EnsureUser(_userName);
+                    ctx.Load(user);
+                    ctx.ExecuteQuery();
 
-                //if (user.Any())
-                //{
-                //    User userLogged = user.FirstOrDefault();
+                    if (user != null)
+                    {
 
-                //    context.Load(userLogged.Groups);
-                //    context.ExecuteQuery();
+                        // Authorized = true;
+                        UserLoggedInName = user.Title;
 
-                //    GroupCollection group = userLogged.Groups;
-
-                //    IEnumerable<Group> usergroup = context.LoadQuery(userLogged.Groups.Where(p => p.Title == groupName));
-                //    context.ExecuteQuery();
-                //    if (!usergroup.Any())
-                //    {
-                //        exist = false;
-                //    }
-                //    else
-                //        exist = true;
-                //}
-
-            }
-            return count;
+                    }
+                    //else
+                    //    Authorized = false;
+                }
+           
+            return UserLoggedInName;
         }
 
         public bool GetUserGroup(string groupName)
