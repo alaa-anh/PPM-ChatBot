@@ -45,61 +45,36 @@ namespace Common
             string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName%20eq%20%27" + _userLoggedInName + "%27";
             Uri endpointUri = null;
             int ProjectCounter = 0;
-            string isvalid;
             using (var client = new WebClient())
             {
                 client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
                 client.Credentials = credentials;
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
-
-            //    isvalid = GetUserGroupTest("Project Managers (Project Web App Synchronized)");
-                if (GetUserGroupTest("Project Managers (Project Web App Synchronized)"))
+                if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
                     endpointUri = new Uri(webUri + PMAPI);
-                var responce = client.DownloadString(endpointUri);
-                var t = JToken.Parse(responce);
-                JObject results = JObject.Parse(t["d"].ToString());
-
-
-                List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-
-             
-
-
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
                 }
-                //else if (GetUserGroupAPI("Web Administrators (Project Web App Synchronized)") || GetUserGroupAPI("Administrators for Project Web App") || GetUserGroupAPI("Portfolio Managers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Resource Managers for Project Web App"))
-                //{
-                //    endpointUri = new Uri(webUri + AdminAPI);
-                //    var responce = client.DownloadString(endpointUri);
-                //    var t = JToken.Parse(responce);
-                //    JObject results = JObject.Parse(t["d"].ToString());
-
-
-                //    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                //    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-
-
-                //}
-
-
-
-
+                else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
+                {
+                    endpointUri = new Uri(webUri + AdminAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                }
             }
-
-            //HeroCard plCard = new HeroCard()
-            //{
-            //    Title = _userName + "__" + _userLoggedInName,
-                
-            //};
-            //reply.Attachments.Add(plCard.ToAttachment());
-
             Counter = ProjectCounter;
             return reply;
         }
 
-        public bool GetUserGroupTest(string groupName)
+        public bool GetUserGroup(string groupName)
         {
             bool exist = false;
 
@@ -141,44 +116,7 @@ namespace Common
             return exist;
         }
 
-        public bool GetUserGroup(string groupName)
-        {
-            bool exist = false;
-            using (ProjectContext context = new ProjectContext(_siteUri))
-            {
-                SecureString passWord = new SecureString();
-                foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
-                context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-                context.Load(context.Web);
-                context.ExecuteQuery();
-
-                Web web = context.Web;
-
-                IEnumerable<User> user = context.LoadQuery(web.SiteUsers.Where(p => p.Email == _userName));
-                context.ExecuteQuery();
-
-                if (user.Any())
-                {
-                    User userLogged = user.FirstOrDefault();
-
-                    context.Load(userLogged.Groups);
-                    context.ExecuteQuery();
-
-                    GroupCollection group = userLogged.Groups;
-
-                    IEnumerable<Group> usergroup = context.LoadQuery(userLogged.Groups.Where(p => p.Title == groupName));
-                    context.ExecuteQuery();
-                    if (!usergroup.Any())
-                    {
-                        exist = false;
-                    }
-                    else
-                        exist = true;
-                }
-
-            }
-            return exist;
-        }
+       
         
 
 
