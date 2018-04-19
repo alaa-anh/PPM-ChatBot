@@ -53,8 +53,8 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
-                isvalid = GetUserGroupTest("Project Managers (Project Web App Synchronized)");
-                if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+            //    isvalid = GetUserGroupTest("Project Managers (Project Web App Synchronized)");
+                if (GetUserGroupTest("Project Managers (Project Web App Synchronized)"))
                 {
                     endpointUri = new Uri(webUri + PMAPI);
                 var responce = client.DownloadString(endpointUri);
@@ -88,18 +88,18 @@ namespace Common
 
             }
 
-            HeroCard plCard = new HeroCard()
-            {
-                Title = _userName + "__" + _userLoggedInName +"__"+ isvalid,
+            //HeroCard plCard = new HeroCard()
+            //{
+            //    Title = _userName + "__" + _userLoggedInName,
                 
-            };
-            reply.Attachments.Add(plCard.ToAttachment());
+            //};
+            //reply.Attachments.Add(plCard.ToAttachment());
 
             Counter = ProjectCounter;
             return reply;
         }
 
-        public string GetUserGroupTest(string groupName)
+        public bool GetUserGroupTest(string groupName)
         {
             bool exist = false;
 
@@ -138,7 +138,7 @@ namespace Common
                     }
                 }
             }
-            return UserLoggedInName;
+            return exist;
         }
 
         public bool GetUserGroup(string groupName)
