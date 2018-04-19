@@ -51,46 +51,47 @@ namespace Common
                 client.Credentials = credentials;
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
-                //    if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
-                //    {
-                //        endpointUri = new Uri(webUri + PMAPI);
-                //        var responce = client.DownloadString(endpointUri);
-                //        var t = JToken.Parse(responce);
-                //        JObject results = JObject.Parse(t["d"].ToString());
+
+                if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
+                {
+                    endpointUri = new Uri(webUri + PMAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
 
 
-                //        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                //        reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+
+                    HeroCard plCard = new HeroCard()
+                    {
+                        Title = "Test PM",
+
+                    };
+                    reply.Attachments.Add(plCard.ToAttachment());
 
 
+                }
+                else if (GetUserGroupAPI("Web Administrators (Project Web App Synchronized)") || GetUserGroupAPI("Administrators for Project Web App") || GetUserGroupAPI("Portfolio Managers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Resource Managers for Project Web App"))
+                {
+                    endpointUri = new Uri(webUri + AdminAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
 
-                //    }
-                //    else
-                //    {
-                //        endpointUri = new Uri(webUri + AdminAPI);
-                //        var responce = client.DownloadString(endpointUri);
-                //        var t = JToken.Parse(responce);
-                //        JObject results = JObject.Parse(t["d"].ToString());
+
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
 
-                //        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                //        reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                }
 
-                //        // reply = GetAllProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
-                //    }
-
-                
 
 
             }
 
-            HeroCard plCard = new HeroCard()
-            {
-                Title = "Test",
-              
-            };
-            reply.Attachments.Add(plCard.ToAttachment());
+           
 
             Counter = ProjectCounter;
             return reply;
