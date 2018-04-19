@@ -54,16 +54,16 @@ namespace Common
 
                 //if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
                 //{
-                    //endpointUri = new Uri(webUri + PMAPI);
-                    //var responce = client.DownloadString(endpointUri);
-                    //var t = JToken.Parse(responce);
-                    //JObject results = JObject.Parse(t["d"].ToString());
+                endpointUri = new Uri(webUri + PMAPI);
+                var responce = client.DownloadString(endpointUri);
+                var t = JToken.Parse(responce);
+                JObject results = JObject.Parse(t["d"].ToString());
 
 
-                    //List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                    //reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                //List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                //reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
-                    HeroCard plCard = new HeroCard()
+                HeroCard plCard = new HeroCard()
                     {
                         Title = "Test PM",
 
