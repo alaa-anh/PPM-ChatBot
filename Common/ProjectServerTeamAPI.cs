@@ -60,15 +60,15 @@ namespace Common
                 JObject results = JObject.Parse(t["d"].ToString());
 
 
-                //List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                //reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
-                HeroCard plCard = new HeroCard()
-                    {
-                        Title = "Test PM",
+                //HeroCard plCard = new HeroCard()
+                //    {
+                //        Title = "Test PM",
 
-                    };
-                    reply.Attachments.Add(plCard.ToAttachment());
+                //    };
+                //    reply.Attachments.Add(plCard.ToAttachment());
 
 
                 //}
