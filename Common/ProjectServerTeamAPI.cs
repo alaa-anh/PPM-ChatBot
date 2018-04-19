@@ -101,6 +101,8 @@ namespace Common
 
         public string GetUserGroupTest(string groupName)
         {
+            bool exist = false;
+
             string UserLoggedInName = string.Empty;
                 using (ProjectContext ctx = new ProjectContext(_siteUri))
                 {
@@ -109,22 +111,33 @@ namespace Common
                     foreach (char c in _userPasswordAdmin) passWord.AppendChar(c);
                     ctx.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
 
+                User user = ctx.Web.EnsureUser(_userName);
+                ctx.Load(user);
+                ctx.ExecuteQuery();
 
-                    var user = ctx.Web.EnsureUser(_userName);
-                    ctx.Load(user);
+                if (user != null)
+                {
+                    ctx.Load(user.Groups);
                     ctx.ExecuteQuery();
+                    GroupCollection group = user.Groups;
 
-                    if (user != null)
+                    if (group.Count>0)
                     {
+                        IEnumerable<Group> usergroup = ctx.LoadQuery(user.Groups.Where(p => p.Title == groupName));
+                        ctx.ExecuteQuery();
+                        if (!usergroup.Any())
+                        {
+                            exist = false;
+                        }
+                        else
+                        {
+                            exist = true;
 
-                        // Authorized = true;
-                        UserLoggedInName = user.Title;
-
+                            UserLoggedInName = user.Title;
+                        }
                     }
-                    //else
-                    //    Authorized = false;
                 }
-           
+            }
             return UserLoggedInName;
         }
 
@@ -139,29 +152,29 @@ namespace Common
                 context.Load(context.Web);
                 context.ExecuteQuery();
 
-                //Web web = context.Web;
+                Web web = context.Web;
 
-                //IEnumerable<User> user = context.LoadQuery(web.SiteUsers.Where(p => p.Email == _userName));
-                //context.ExecuteQuery();
+                IEnumerable<User> user = context.LoadQuery(web.SiteUsers.Where(p => p.Email == _userName));
+                context.ExecuteQuery();
 
-                //if (user.Any())
-                //{
-                //    User userLogged = user.FirstOrDefault();
+                if (user.Any())
+                {
+                    User userLogged = user.FirstOrDefault();
 
-                //    context.Load(userLogged.Groups);
-                //    context.ExecuteQuery();
+                    context.Load(userLogged.Groups);
+                    context.ExecuteQuery();
 
-                //    GroupCollection group = userLogged.Groups;
+                    GroupCollection group = userLogged.Groups;
 
-                //    IEnumerable<Group> usergroup = context.LoadQuery(userLogged.Groups.Where(p => p.Title == groupName));
-                //    context.ExecuteQuery();
-                //    if (!usergroup.Any())
-                //    {
-                //        exist = false;
-                //    }
-                //    else
-                //        exist = true;
-                //}
+                    IEnumerable<Group> usergroup = context.LoadQuery(userLogged.Groups.Where(p => p.Title == groupName));
+                    context.ExecuteQuery();
+                    if (!usergroup.Any())
+                    {
+                        exist = false;
+                    }
+                    else
+                        exist = true;
+                }
 
             }
             return exist;
