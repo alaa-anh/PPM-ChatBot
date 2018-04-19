@@ -52,7 +52,7 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
-                if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
+                if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
                     endpointUri = new Uri(webUri + PMAPI);
                 var responce = client.DownloadString(endpointUri);
@@ -86,13 +86,18 @@ namespace Common
 
             }
 
-           
+            HeroCard plCard = new HeroCard()
+            {
+                Title = "Test final",
+                
+            };
+            reply.Attachments.Add(plCard.ToAttachment());
 
             Counter = ProjectCounter;
             return reply;
         }
 
-        public bool GetUserGroupAPI(string groupName)
+        public bool GetUserGroup(string groupName)
         {
             bool exist = false;
             using (ProjectContext context = new ProjectContext(_siteUri))
@@ -102,6 +107,7 @@ namespace Common
                 context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
 
                 context.Load(context.Web);
+
                 context.ExecuteQuery();
 
                 Web web = context.Web;
@@ -127,9 +133,11 @@ namespace Common
                     else
                         exist = true;
                 }
+
             }
             return exist;
         }
+        
 
         public IMessageActivity GetAllProjects(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
         {
