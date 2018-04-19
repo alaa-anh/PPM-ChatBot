@@ -52,8 +52,8 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
-                if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
-                {
+                //if (GetUserGroupAPI("Project Managers (Project Web App Synchronized)"))
+                //{
                     //endpointUri = new Uri(webUri + PMAPI);
                     //var responce = client.DownloadString(endpointUri);
                     //var t = JToken.Parse(responce);
@@ -71,7 +71,7 @@ namespace Common
                     reply.Attachments.Add(plCard.ToAttachment());
 
 
-                }
+                //}
                 //else if (GetUserGroupAPI("Web Administrators (Project Web App Synchronized)") || GetUserGroupAPI("Administrators for Project Web App") || GetUserGroupAPI("Portfolio Managers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Resource Managers for Project Web App"))
                 //{
                 //    endpointUri = new Uri(webUri + AdminAPI);
