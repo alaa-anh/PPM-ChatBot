@@ -782,24 +782,27 @@ namespace Common
                 {
                     var tsk = jArrays[startIndex];
 
-                    if ((string)tsk["TaskDuration"] == "0.000000")
+                    if (tsk["TaskDuration"] != null)
                     {
-                        // string TaskDuration = (string)tsk["TaskDuration"];
-                        Counter++;
-                        var SubtitleVal = "";
-                        string TaskName = (string)tsk["TaskName"];
-                        string TaskPercentCompleted = (string)tsk["TaskPercentCompleted"];
-                        string TaskStartDate = (string)tsk["TaskStartDate"];
-                        string TaskFinishDate = (string)tsk["TaskFinishDate"];
-                        SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
-                        SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
-                        SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
-                        HeroCard plCard = new HeroCard()
+                        if ((string)tsk["TaskDuration"] == "0.000000")
                         {
-                            Title = TaskName,
-                            Subtitle = SubtitleVal
-                        };
-                        reply.Attachments.Add(plCard.ToAttachment());
+                            // string TaskDuration = (string)tsk["TaskDuration"];
+                            Counter++;
+                            var SubtitleVal = "";
+                            string TaskName = (string)tsk["TaskName"];
+                            string TaskPercentCompleted = (string)tsk["TaskPercentCompleted"];
+                            string TaskStartDate = (string)tsk["TaskStartDate"];
+                            string TaskFinishDate = (string)tsk["TaskFinishDate"];
+                            SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
+                            SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
+                            SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
+                            HeroCard plCard = new HeroCard()
+                            {
+                                Title = TaskName,
+                                Subtitle = SubtitleVal
+                            };
+                            reply.Attachments.Add(plCard.ToAttachment());
+                        }
                     }
 
                     if (Counter == 10)
