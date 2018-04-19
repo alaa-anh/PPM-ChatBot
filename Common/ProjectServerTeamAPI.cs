@@ -89,6 +89,14 @@ namespace Common
 
 
             //}
+
+            HeroCard plCard = new HeroCard()
+            {
+                Title = "Test",
+              
+            };
+            reply.Attachments.Add(plCard.ToAttachment());
+
             return reply;
         }
 
