@@ -484,7 +484,6 @@ namespace Common
             return reply;
         }
 
-
         public IMessageActivity GetProjectMilestones(IDialogContext dialogContext, int itemStartIndex, string pName, out int Counter)
         {
             IMessageActivity reply = null;
@@ -526,7 +525,6 @@ namespace Common
             Counter = TaskCounter;
             return reply;
         }
-
 
         private IMessageActivity GetAllTasks(IDialogContext dialogContext, int SIndex, List<JToken> jArrays, out int Counter)
         {
@@ -804,7 +802,6 @@ namespace Common
             return reply;
         }
 
-
         public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal, out int Counter)
         {
             IMessageActivity reply = null;
@@ -853,7 +850,6 @@ namespace Common
 
             return reply;
         }
-
 
         public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, ProjectContext context, IEnumerable<PublishedProject> publishedProject, int SIndex, int completionpercentVal, out int Counter)
         {
@@ -1212,13 +1208,6 @@ namespace Common
             return reply;
         }
 
-
-
-      
-
-
-
-
         public IMessageActivity FilterProjectsByDate(IDialogContext dialogContext, string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, out int Counter)
         {
             IMessageActivity reply = null;
@@ -1458,8 +1447,6 @@ namespace Common
             //}
             return reply;
         }
-
-
 
         //private IMessageActivity GetResourceLoggedInTasks(IDialogContext dialogContext, int SIndex, ProjectContext context, PublishedProject proj, bool Completed, bool NotCompleted, bool delayed, out int Counter)
         //{
