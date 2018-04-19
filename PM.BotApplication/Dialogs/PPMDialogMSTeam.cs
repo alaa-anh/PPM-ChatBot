@@ -154,7 +154,7 @@ namespace PM.BotApplication.Dialogs
                     pPM = true;
                 else
                 {
-                    await context.PostAsync(new Common.ProjectServerTeam(userName, password).GetMSProjects(context, itemStartIndex, showCompletion, Pdate, pDuration, pPM, out Counter));
+                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password , UserLoggedInName).GetMSProjects(context, itemStartIndex, showCompletion, Pdate, pDuration, pPM, out Counter));
                     //await context.PostAsync(new Common.ProjectServerTeam(userName, password).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
 
                     //if (Counter > 10)
