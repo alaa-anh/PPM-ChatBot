@@ -61,7 +61,7 @@ namespace Common
 
 
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                   // reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
                     HeroCard plCard = new HeroCard()
                     {
@@ -72,19 +72,19 @@ namespace Common
 
 
                 }
-                else if (GetUserGroupAPI("Web Administrators (Project Web App Synchronized)") || GetUserGroupAPI("Administrators for Project Web App") || GetUserGroupAPI("Portfolio Managers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Resource Managers for Project Web App"))
-                {
-                    endpointUri = new Uri(webUri + AdminAPI);
-                    var responce = client.DownloadString(endpointUri);
-                    var t = JToken.Parse(responce);
-                    JObject results = JObject.Parse(t["d"].ToString());
+                //else if (GetUserGroupAPI("Web Administrators (Project Web App Synchronized)") || GetUserGroupAPI("Administrators for Project Web App") || GetUserGroupAPI("Portfolio Managers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Portfolio Viewers for Project Web App") || GetUserGroupAPI("Resource Managers for Project Web App"))
+                //{
+                //    endpointUri = new Uri(webUri + AdminAPI);
+                //    var responce = client.DownloadString(endpointUri);
+                //    var t = JToken.Parse(responce);
+                //    JObject results = JObject.Parse(t["d"].ToString());
 
 
-                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                //    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                //    reply = GetAllProjects(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
 
-                }
+                //}
 
 
 
