@@ -301,16 +301,16 @@ namespace PM.BotApplication.Dialogs
                         {
                             await context.PostAsync(messageActivity);
                         }
-                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, ListName));
+                        //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, ListName));
 
-                        if (Counter > 10)
-                        {
-                            if (Counter > 100)
-                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, ListName, searchTerm_ProjectName, ""));
-                            else
-                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
-                            //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
-                        }
+                        //if (Counter > 10)
+                        //{
+                        //    if (Counter > 100)
+                        //        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, ListName, searchTerm_ProjectName, ""));
+                        //    else
+                        //        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
+                        //    //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
+                        //}
 
                     }
                 }
