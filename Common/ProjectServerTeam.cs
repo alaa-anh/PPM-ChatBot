@@ -60,7 +60,7 @@ namespace Common
                     //else if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
                     //{
                     context.Load(projSvr.Projects);
-                    //context.ExecuteQuery();
+                    context.ExecuteQuery();
                     //    //     ProjectCollection projectDetails = context.Projects;
                     //    //reply = GetAllProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
                     //}
@@ -77,7 +77,7 @@ namespace Common
 
                 HeroCard plCard = new HeroCard()
                 {
-                    Title = "Alaa",
+                    Title = "Alaaaa",
                 };
                 reply.Attachments.Add(plCard.ToAttachment());
             }
