@@ -516,7 +516,7 @@ namespace Common
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
 
-                    reply = GetAllProjectMilestones(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                   // reply = GetAllProjectMilestones(dialogContext, itemStartIndex, jArrays, out TaskCounter);
                 }
 
 
