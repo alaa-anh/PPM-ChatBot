@@ -773,8 +773,8 @@ namespace Common
 
             int inDexToVal = SIndex + 10;
             Counter = 0;
-            if (inDexToVal >= jArrays.Count)
-                inDexToVal = jArrays.Count;
+            //if (inDexToVal >= jArrays.Count)
+            //    inDexToVal = jArrays.Count;
 
             if (jArrays.Count > 0)
             {
