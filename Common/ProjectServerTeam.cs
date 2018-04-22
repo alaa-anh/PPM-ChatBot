@@ -7,6 +7,7 @@ using Microsoft.ProjectServer.Client;
 using Microsoft.SharePoint.Client;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
+using System.Net;
 
 namespace Common
 {
@@ -34,12 +35,16 @@ namespace Common
             reply = dialogContext.MakeMessage();
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
+            NetworkCredential _myCredentials = new NetworkCredential(_userName, _userPassword, "");
+
+
             using (ProjectContext context = new ProjectContext(_siteUri))
             {
-                SecureString passWord = new SecureString();
-                foreach (char c in _userPassword.ToCharArray()) passWord.AppendChar(c);
-                context.Credentials = new SharePointOnlineCredentials(_userName, passWord);
+                //SecureString passWord = new SecureString();
+                //foreach (char c in _userPassword.ToCharArray()) passWord.AppendChar(c);
+                //context.Credentials = new SharePointOnlineCredentials(_userName, passWord);
 
+                context.Credentials = _myCredentials;
                 int ProjectCounter = 0;
 
                 //if (GetUserGroup(context, "Team Members (Project Web App Synchronized)") || GetUserGroup(context, "Team Leads for Project Web App"))
