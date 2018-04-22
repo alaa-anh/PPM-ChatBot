@@ -183,7 +183,7 @@ namespace PM.BotApplication.Dialogs
         {
 
             IMessageActivity messageActivity = null;
-            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)))
+            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
 
                 EntityRecommendation projectname;
@@ -327,7 +327,7 @@ namespace PM.BotApplication.Dialogs
         [LuisIntent("FilterProjectsByDate")]
         public async Task FilterProjectsByDate(IDialogContext context, LuisResult luisResult)
         {
-            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)))
+            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
                 string FilterType = string.Empty;
                 string ProjectSEdateFlag = "START";
@@ -412,7 +412,7 @@ namespace PM.BotApplication.Dialogs
         [LuisIntent("GetResourceAssignments")]
         public async Task GetResourceAssignments(IDialogContext context, LuisResult luisResult)
         {
-            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)))
+            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
 
 

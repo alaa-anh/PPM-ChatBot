@@ -279,24 +279,46 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
 
-                if (Completed == true)
-                {
-                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&TaskPercentCompleted%20eq%201";
-                }
-                else if (NotCompleted == true)
-                {
-                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&TaskPercentCompleted%20Nq%201";
-                }
-                else if (delayed == true)
-                {
-                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&ActualDuration%20lt%20ScheduledDuration";
-                }
-                else
-                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27";
+                //if (Completed == true)
+                //{
+                //    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&TaskPercentCompleted%20eq%201";
+                //}
+                //else if (NotCompleted == true)
+                //{
+                //    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&TaskPercentCompleted%20Nq%201";
+                //}
+                //else if (delayed == true)
+                //{
+                //    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&ActualDuration%20lt%20ScheduledDuration";
+                //}
+                //else
+                pName = ProjectNameStr(pName);
+                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName eq '" + pName + "'";
 
                 if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
                 {
                    // reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
+                }
+                else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    if(_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    {
+                        endpointUri = new Uri(webUri + PMAPI);
+                        var responce = client.DownloadString(endpointUri);
+                        var t = JToken.Parse(responce);
+                        JObject results = JObject.Parse(t["d"].ToString());
+                        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                        reply = GetAllTasks(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    }
+                    else
+                    {
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = "You Don't have permission to access this project",
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+
+                    }
                 }
                 else 
                 {
@@ -325,6 +347,8 @@ namespace Common
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
+            pName = ProjectNameStr(pName);
+
             string PMAPI = "/_api/ProjectData/Issues?$filter=ProjectName%20eq%20%27" + pName + "%27";
             
 
@@ -340,6 +364,27 @@ namespace Common
                 if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
                 {
                     // reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
+                }
+                else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    {
+                        endpointUri = new Uri(webUri + PMAPI);
+                        var responce = client.DownloadString(endpointUri);
+                        var t = JToken.Parse(responce);
+                        JObject results = JObject.Parse(t["d"].ToString());
+                        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                        reply = GetAllIssues(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    }
+                    else
+                    {
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = "You Don't have permission to access this project",
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+
+                    }
                 }
                 else
                 {
@@ -368,6 +413,8 @@ namespace Common
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
+            pName = ProjectNameStr(pName);
+
             string PMAPI = "/_api/ProjectData/Risks?$filter=ProjectName%20eq%20%27" + pName + "%27";
 
 
@@ -383,6 +430,27 @@ namespace Common
                 if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
                 {
                     // reply = GetResourceLoggedInRisks(dialogContext, itemsRisk, itemStartIndex, out TaskCounter);
+                }
+                else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    {
+                        endpointUri = new Uri(webUri + PMAPI);
+                        var responce = client.DownloadString(endpointUri);
+                        var t = JToken.Parse(responce);
+                        JObject results = JObject.Parse(t["d"].ToString());
+                        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                        reply = GetAllRisks(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    }
+                    else
+                    {
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = "You Don't have permission to access this project",
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+
+                    }
                 }
                 else
                 {
@@ -412,6 +480,8 @@ namespace Common
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
+            pName = ProjectNameStr(pName);
+
             string PMAPI = "/_api/ProjectData/Deliverables?$filter=ProjectName%20eq%20%27" + pName + "%27";
 
 
@@ -427,7 +497,29 @@ namespace Common
                 if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
                 {
                 }
-                else 
+                else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    {
+                        endpointUri = new Uri(webUri + PMAPI);
+                        var responce = client.DownloadString(endpointUri);
+                        var t = JToken.Parse(responce);
+                        JObject results = JObject.Parse(t["d"].ToString());
+                        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                        reply = GetAllDeliverabels(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    }
+                    else
+                    {
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = "You Don't have permission to access this project",
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+
+                    }
+                }
+
+                else
                 {
                     endpointUri = new Uri(webUri + PMAPI);
                     var responce = client.DownloadString(endpointUri);
@@ -453,6 +545,8 @@ namespace Common
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
+            pName = ProjectNameStr(pName);
+
             string PMAPI = "/_api/ProjectData/Assignments?$filter=ProjectName%20eq%20%27" + pName + "%27";
             Uri endpointUri = null;
             int TaskCounter = 0;
@@ -464,6 +558,27 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
                 if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
                 {
+                }
+                else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    {
+                        endpointUri = new Uri(webUri + PMAPI);
+                        var responce = client.DownloadString(endpointUri);
+                        var t = JToken.Parse(responce);
+                        JObject results = JObject.Parse(t["d"].ToString());
+                        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                        reply = GetAllAssignments(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    }
+                    else
+                    {
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = "You Don't have permission to access this project",
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+
+                    }
                 }
                 else
                 {
@@ -495,6 +610,8 @@ namespace Common
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
+            pName = ProjectNameStr(pName);
+
             string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&";
             Uri endpointUri = null;
             int TaskCounter = 0;
@@ -506,6 +623,27 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
                 if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
                 {
+                }
+                else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    {
+                        endpointUri = new Uri(webUri + PMAPI);
+                        var responce = client.DownloadString(endpointUri);
+                        var t = JToken.Parse(responce);
+                        JObject results = JObject.Parse(t["d"].ToString());
+                        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                        reply = GetAllProjectMilestones(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    }
+                    else
+                    {
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = "You Don't have permission to access this project",
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+
+                    }
                 }
                 else
                 {
@@ -1452,6 +1590,48 @@ namespace Common
             return reply;
         }
 
+
+        public string GetProjectPMName(string ProjectName)
+        {
+            string ProjectPMName = string.Empty;
+            SecureString passWord = new SecureString();
+            foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+            SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+            var webUri = new Uri(_siteUri);
+            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectName eq '"+ProjectName+"'";
+            Uri endpointUri = null;
+            using (var client = new WebClient())
+            {
+                client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
+                client.Credentials = credentials;
+                client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
+                endpointUri = new Uri(webUri + PMAPI);
+                var responce = client.DownloadString(endpointUri);
+                var t = JToken.Parse(responce);
+                JObject results = JObject.Parse(t["d"].ToString());
+                List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+
+                if(jArrays !=null)
+                {
+                    if(jArrays.Count >0)
+                    {
+                        if (jArrays[0]["ProjectOwnerName"] != null)
+                            ProjectPMName = (string)jArrays[0]["ProjectOwnerName"];
+                    }
+                }
+            }
+            return ProjectPMName;
+        }
+
+        public string ProjectNameStr(string ProjectName)
+        {
+            string pName = ProjectName;
+            if (pName.Contains(" - "))
+                pName = pName.Replace(" - ", "-");
+
+            return pName;
+        }
         //private IMessageActivity GetResourceLoggedInTasks(IDialogContext dialogContext, int SIndex, ProjectContext context, PublishedProject proj, bool Completed, bool NotCompleted, bool delayed, out int Counter)
         //{
         //    var SubtitleVal = "";
@@ -1557,7 +1737,7 @@ namespace Common
         //    return reply;
         //}
 
-       
+
 
         //private IMessageActivity GetResourceLoggedInRisks(IDialogContext dialogContext, ListItemCollection itemsRisk, int SIndex, out int Counter)
         //{
@@ -1812,7 +1992,7 @@ namespace Common
         //    return exist;
         //}
 
-       
+
 
         //private static PublishedProject GetProjectByName(string name, ProjectContext context)
         //{
