@@ -301,7 +301,7 @@ namespace Common
                 }
                 else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    if(_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    if(_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
                     {
                         endpointUri = new Uri(webUri + PMAPI);
                         var responce = client.DownloadString(endpointUri);
@@ -367,7 +367,7 @@ namespace Common
                 }
                 else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
                     {
                         endpointUri = new Uri(webUri + PMAPI);
                         var responce = client.DownloadString(endpointUri);
@@ -433,7 +433,7 @@ namespace Common
                 }
                 else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
                     {
                         endpointUri = new Uri(webUri + PMAPI);
                         var responce = client.DownloadString(endpointUri);
@@ -499,7 +499,7 @@ namespace Common
                 }
                 else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
                     {
                         endpointUri = new Uri(webUri + PMAPI);
                         var responce = client.DownloadString(endpointUri);
@@ -561,7 +561,7 @@ namespace Common
                 }
                 else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
                     {
                         endpointUri = new Uri(webUri + PMAPI);
                         var responce = client.DownloadString(endpointUri);
@@ -626,7 +626,7 @@ namespace Common
                 }
                 else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName))
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
                     {
                         endpointUri = new Uri(webUri + PMAPI);
                         var responce = client.DownloadString(endpointUri);
