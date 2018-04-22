@@ -486,18 +486,18 @@ namespace Common
 
         public IMessageActivity GetProjectMilestones(IDialogContext dialogContext, int itemStartIndex, string pName, out int Counter)
         {
-            IMessageActivity reply = null;
-            reply = dialogContext.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            IMessageActivity reply = dialogContext.MakeMessage();
+
+            //reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
 
-            SecureString passWord = new SecureString();
-            foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
-            SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-            var webUri = new Uri(_siteUri);
-            string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&";
-            Uri endpointUri = null;
-            int TaskCounter = 0;
+            //SecureString passWord = new SecureString();
+            //foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+            //SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+            //var webUri = new Uri(_siteUri);
+            //string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&";
+            //Uri endpointUri = null;
+            //int TaskCounter = 0;
             //using (var client = new WebClient())
             //{
             //    client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
@@ -523,7 +523,7 @@ namespace Common
 
             //}
 
-            Counter = TaskCounter;
+            //Counter = TaskCounter;
 
             HeroCard plCard = new HeroCard()
             {
