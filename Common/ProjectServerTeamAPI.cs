@@ -229,7 +229,7 @@ namespace Common
                         Type = ActionTypes.PostBack,
                         Title = "Milestones",
                         Value = "get " + ProjectName + " milestones",
-                        Text = "get " + ProjectName + " milesones",
+                        Text = "get " + ProjectName + " milestones",
 
                     };
                     cardactions.Add(btnMilestones);
@@ -1215,7 +1215,7 @@ namespace Common
                         Type = ActionTypes.PostBack,
                         Title = "Milestones",
                         Value = "get " + ProjectName + " milestones",
-                        Text = "get " + ProjectName + " milesones",
+                        Text = "get " + ProjectName + " milestones",
 
                     };
                     cardactions.Add(btnMilestones);
