@@ -172,6 +172,7 @@
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\PPMController.cs" />
     <Compile Include="Dialogs\PPMDialogMSTeam.cs" />
+    <Compile Include="Dialogs\PPMDialogMSTeamAPI.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

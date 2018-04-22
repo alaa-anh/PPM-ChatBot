@@ -42,7 +42,7 @@ namespace Common
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
             string AdminAPI = "/_api/ProjectData/Projects";
-            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName%20eq%20%27" + _userLoggedInName + "%27";
+            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "'";
             Uri endpointUri = null;
             int ProjectCounter = 0;
             using (var client = new WebClient())
@@ -349,7 +349,7 @@ namespace Common
             var webUri = new Uri(_siteUri);
             pName = ProjectNameStr(pName);
 
-            string PMAPI = "/_api/ProjectData/Issues?$filter=ProjectName%20eq%20%27" + pName + "%27";
+            string PMAPI = "/_api/ProjectData/Issues?$filter=ProjectName  eq '" + pName + "'";
             
 
 
@@ -415,7 +415,7 @@ namespace Common
             var webUri = new Uri(_siteUri);
             pName = ProjectNameStr(pName);
 
-            string PMAPI = "/_api/ProjectData/Risks?$filter=ProjectName%20eq%20%27" + pName + "%27";
+            string PMAPI = "/_api/ProjectData/Risks?$filter=ProjectName eq '" + pName + "'";
 
 
 
@@ -482,7 +482,7 @@ namespace Common
             var webUri = new Uri(_siteUri);
             pName = ProjectNameStr(pName);
 
-            string PMAPI = "/_api/ProjectData/Deliverables?$filter=ProjectName%20eq%20%27" + pName + "%27";
+            string PMAPI = "/_api/ProjectData/Deliverables?$filter=ProjectName eq '" + pName + "'";
 
 
 
@@ -547,7 +547,7 @@ namespace Common
             var webUri = new Uri(_siteUri);
             pName = ProjectNameStr(pName);
 
-            string PMAPI = "/_api/ProjectData/Assignments?$filter=ProjectName%20eq%20%27" + pName + "%27";
+            string PMAPI = "/_api/ProjectData/Assignments?$filter=ProjectName eq '" + pName + "'";
             Uri endpointUri = null;
             int TaskCounter = 0;
             using (var client = new WebClient())
@@ -612,7 +612,7 @@ namespace Common
             var webUri = new Uri(_siteUri);
             pName = ProjectNameStr(pName);
 
-            string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&";
+            string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName eq '" + pName + "'";
             Uri endpointUri = null;
             int TaskCounter = 0;
             using (var client = new WebClient())

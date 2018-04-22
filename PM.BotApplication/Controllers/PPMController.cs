@@ -39,7 +39,11 @@ namespace PM.BotApplication
                 //else if (activity.ChannelId == "emulator")
                 //    await Conversation.SendAsync(activity, () => new PPMDialog(activity));
                 //else if (activity.ChannelId == "team")
-                    await Conversation.SendAsync(activity, () => new PPMDialogMSTeam(activity));
+
+                    await Conversation.SendAsync(activity, () => new PPMDialogMSTeamAPI(activity));
+                //await Conversation.SendAsync(activity, () => new PPMDialogMSTeam(activity));
+
+
                 //else
                 //    await Conversation.SendAsync(activity, () => new PPMDialog(activity));
 
