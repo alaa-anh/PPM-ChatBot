@@ -269,48 +269,48 @@ namespace PM.BotApplication.Dialogs
                         messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectMilestones(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                     }
 
-                    //else if (ListName == "")
-                    //{
-                    //    EntityRecommendation projectSDate, projectEDate, projectDuration, projectCompletion, projectDate, projectManager;
+                    else if (ListName == "")
+                    {
+                        EntityRecommendation projectSDate, projectEDate, projectDuration, projectCompletion, projectDate, projectManager;
 
 
-                    //    bool Pdate = false;
-                    //    bool pDuration = false;
-                    //    bool PCompletion = false;
-                    //    bool PMshow = false;
+                        bool Pdate = false;
+                        bool pDuration = false;
+                        bool PCompletion = false;
+                        bool PMshow = false;
 
 
-                    //    if (luisResult.TryFindEntity("Project.SDate", out projectSDate) || luisResult.TryFindEntity("Project.EDate", out projectEDate) || luisResult.TryFindEntity("Project.Date", out projectDate))
-                    //        Pdate = true;
-                    //    if (luisResult.TryFindEntity("Project.Duration", out projectDuration))
-                    //        pDuration = true;
-                    //    if (luisResult.TryFindEntity("Project.Completion", out projectCompletion))
-                    //        PCompletion = true;
-                    //    if (luisResult.TryFindEntity("Project.PM", out projectManager))
-                    //        PMshow = true;
+                        if (luisResult.TryFindEntity("Project.SDate", out projectSDate) || luisResult.TryFindEntity("Project.EDate", out projectEDate) || luisResult.TryFindEntity("Project.Date", out projectDate))
+                            Pdate = true;
+                        if (luisResult.TryFindEntity("Project.Duration", out projectDuration))
+                            pDuration = true;
+                        if (luisResult.TryFindEntity("Project.Completion", out projectCompletion))
+                            PCompletion = true;
+                        if (luisResult.TryFindEntity("Project.PM", out projectManager))
+                            PMshow = true;
 
-                    //    messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectInfo(context, searchTerm_ProjectName, Pdate, pDuration, PCompletion, PMshow);
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectInfo(context, searchTerm_ProjectName, Pdate, pDuration, PCompletion, PMshow);
 
 
-                    //}
+                    }
 
 
                     if (messageActivity != null)
                     {
-                        //if (messageActivity.Attachments.Count > 0)
-                        //{
+                        if (messageActivity.Attachments.Count > 0)
+                        {
                             await context.PostAsync(messageActivity);
-                        //}
-                        // await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, ListName));
+                        }
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, ListName));
 
-                        //if (Counter > 10)
-                        //{
-                        //    if (Counter > 100)
-                        //        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, ListName, searchTerm_ProjectName, ""));
-                        //    else
-                        //        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
-                        //    //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
-                        //}
+                        if (Counter > 10)
+                        {
+                            if (Counter > 100)
+                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, ListName, searchTerm_ProjectName, ""));
+                            else
+                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
+                            //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
+                        }
 
                     }
                 }

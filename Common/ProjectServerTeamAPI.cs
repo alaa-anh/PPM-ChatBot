@@ -491,48 +491,39 @@ namespace Common
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
 
-            //SecureString passWord = new SecureString();
-            //foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
-            //SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-            //var webUri = new Uri(_siteUri);
-            //string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&";
-            //Uri endpointUri = null;
-            //int TaskCounter = 0;
-            //using (var client = new WebClient())
-            //{
-            //    client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
-            //    client.Credentials = credentials;
-            //    client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
-            //    client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
-            //    if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
-            //    {
-            //    }
-            //    else
-            //    {
-            //        endpointUri = new Uri(webUri + PMAPI);
-            //        var responce = client.DownloadString(endpointUri);
-            //        var t = JToken.Parse(responce);
-            //        JObject results = JObject.Parse(t["d"].ToString());
-            //        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-
-
-            //       // reply = GetAllProjectMilestones(dialogContext, itemStartIndex, jArrays, out TaskCounter);
-            //    }
-
-
-
-            //}
-
-            //Counter = TaskCounter;
-
-            HeroCard plCard = new HeroCard()
+            SecureString passWord = new SecureString();
+            foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+            SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+            var webUri = new Uri(_siteUri);
+            string PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName%20eq%20%27" + pName + "%27&";
+            Uri endpointUri = null;
+            int TaskCounter = 0;
+            using (var client = new WebClient())
             {
-                Title = "Milestones",
-            };
-            reply.Attachments.Add(plCard.ToAttachment());
+                client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
+                client.Credentials = credentials;
+                client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
+                if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
+                {
+                }
+                else
+                {
+                    endpointUri = new Uri(webUri + PMAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-            reply.Text = "kjkjkj";
 
+                     reply = GetAllProjectMilestones(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                }
+
+
+
+            }
+
+            Counter = TaskCounter;
             return reply;
         }
 
