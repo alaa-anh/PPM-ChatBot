@@ -50,10 +50,13 @@ namespace PM.BotApplication.Dialogs
         {
             IMessageActivity messageActivity = null;
             int Counter;
-            messageActivity = new Common.ProjectServerTeam(userName, password, UserLoggedInName).GetMSProjects(context, 10, false, false, false, false, out Counter);
-            if (messageActivity.Attachments.Count > 0)
+            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
-                await context.PostAsync(messageActivity);
+                messageActivity = new Common.ProjectServerTeam(userName, password, UserLoggedInName).GetMSProjects(context, 10, false, false, false, false, out Counter);
+                if (messageActivity.Attachments.Count > 0)
+                {
+                    await context.PostAsync(messageActivity);
+                }
             }
 
             //StringBuilder response = new StringBuilder();
