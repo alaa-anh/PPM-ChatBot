@@ -68,9 +68,6 @@ namespace PM.BotApplication.Dialogs
             //        response.Append($"Hey {UserLoggedInName}.. :)");
             //    }
             //    await context.PostAsync(response.ToString());
-
-               
-
             //    context.Wait(this.MessageReceived);
 
             //}

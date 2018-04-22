@@ -48,8 +48,8 @@ namespace Common
                 //}
                 //else if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
                 //{
-                    context.Load(context.Projects);
-                    context.ExecuteQuery();
+              //      context.Load(context.Projects);
+             //       context.ExecuteQuery();
                 //    ProjectCollection projectDetails = context.Projects;
                 //    reply = GetLoggedInPMProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
                 //}
