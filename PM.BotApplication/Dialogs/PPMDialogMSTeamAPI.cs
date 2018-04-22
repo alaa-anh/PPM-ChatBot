@@ -136,11 +136,8 @@ namespace PM.BotApplication.Dialogs
 
             if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
-
-
                 EntityRecommendation projectSDate, projectEDate, projectDuration, projectCompletion, projectDate, projectPM;
                 EntityRecommendation ProjectItemIndex;
-
                 bool showCompletion = false;
                 bool Pdate = false;
                 bool pDuration = false;
@@ -196,7 +193,6 @@ namespace PM.BotApplication.Dialogs
             IMessageActivity messageActivity = null;
             if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
-
                 EntityRecommendation projectname;
                 EntityRecommendation projectIssues;
                 EntityRecommendation projectTasks;
@@ -220,7 +216,6 @@ namespace PM.BotApplication.Dialogs
                 {
                     itemStartIndex = int.Parse(ItemIndex.Entity);
                 }
-
                 if (luisResult.TryFindEntity("DelayedTask", out DelayedTask))
                 {
                     DelayedTaskV = true;
@@ -228,18 +223,15 @@ namespace PM.BotApplication.Dialogs
                 else if (luisResult.TryFindEntity("CompletedTask", out CompletedTask))
                 {
                     CompletedTaskV = true;
-
                 }
                 else if (luisResult.TryFindEntity("NotCompletedTask", out NotCompletedTask))
                 {
                     NotCompletedTaskV = true;
                     CompletedTaskV = false;
                 }
-
                 if (luisResult.TryFindEntity("Project.name", out projectname))
                 {
                     searchTerm_ProjectName = projectname.Entity;
-                    context.UserData.SetValue("ProjectName", searchTerm_ProjectName);
                 }
 
                 if (string.IsNullOrWhiteSpace(searchTerm_ProjectName))
@@ -279,18 +271,13 @@ namespace PM.BotApplication.Dialogs
                         ListName = Common.Enums.ListName.Milestones.ToString();
                         messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectMilestones(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                     }
-
                     else if (ListName == "")
                     {
                         EntityRecommendation projectSDate, projectEDate, projectDuration, projectCompletion, projectDate, projectManager;
-
-
                         bool Pdate = false;
                         bool pDuration = false;
                         bool PCompletion = false;
                         bool PMshow = false;
-
-
                         if (luisResult.TryFindEntity("Project.SDate", out projectSDate) || luisResult.TryFindEntity("Project.EDate", out projectEDate) || luisResult.TryFindEntity("Project.Date", out projectDate))
                             Pdate = true;
                         if (luisResult.TryFindEntity("Project.Duration", out projectDuration))
@@ -299,13 +286,8 @@ namespace PM.BotApplication.Dialogs
                             PCompletion = true;
                         if (luisResult.TryFindEntity("Project.PM", out projectManager))
                             PMshow = true;
-
                         messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectInfo(context, searchTerm_ProjectName, Pdate, pDuration, PCompletion, PMshow);
-
-
                     }
-
-
                     if (messageActivity != null)
                     {
                         if (messageActivity.Attachments.Count > 0)
@@ -322,16 +304,12 @@ namespace PM.BotApplication.Dialogs
                                 await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, ListName, searchTerm_ProjectName, ""));
                             //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, ListName, searchTerm_ProjectName));
                         }
-
                     }
                 }
-
-
             }
             else
             {
                 PromptDialog.Confirm(context, ResumeAfterConfirmation, "You are note allwed to access the data , do you want to login?");
-
             }
         }
 
@@ -343,16 +321,11 @@ namespace PM.BotApplication.Dialogs
                 string FilterType = string.Empty;
                 string ProjectSEdateFlag = "START";
                 string ProjectED = string.Empty;
-
-
                 string ProjectSDate = string.Empty;
                 string ProjectEDate = string.Empty;
-
                 var filterDate = (object)null;
-
                 EntityRecommendation dateTimeEntity, dateRangeEntity, ProjectS, ProjectE;
                 EntityRecommendation ItemIndex;
-
                 int itemStartIndex = 0;
                 int Counter;
 
@@ -363,16 +336,13 @@ namespace PM.BotApplication.Dialogs
                     {
                         FilterType = Common.TokenHelper.Datevalues(filterDate, "Mod");
                         ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "timex");
-
                     }
                     else
                     {
                         FilterType = "Between";
-
                         ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "start");
                     }
                     ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "end");
-
                 }
 
                 if (luisResult.TryFindEntity("Project.Start", out ProjectS))
