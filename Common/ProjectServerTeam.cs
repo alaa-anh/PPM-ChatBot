@@ -7,7 +7,6 @@ using Microsoft.ProjectServer.Client;
 using Microsoft.SharePoint.Client;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
-using System.Net;
 
 namespace Common
 {
@@ -35,37 +34,33 @@ namespace Common
             reply = dialogContext.MakeMessage();
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
-           // NetworkCredential _myCredentials = new NetworkCredential(_userName, _userPassword, "");
-
-
             using (ProjectContext context = new ProjectContext(_siteUri))
             {
                 SecureString passWord = new SecureString();
                 foreach (char c in _userPassword.ToCharArray()) passWord.AppendChar(c);
                 context.Credentials = new SharePointOnlineCredentials(_userName, passWord);
 
-               // context.Credentials = _myCredentials;
                 int ProjectCounter = 0;
 
-                //if (GetUserGroup(context, "Team Members (Project Web App Synchronized)") || GetUserGroup(context, "Team Leads for Project Web App"))
-                //{
-                //    //   reply = GetResourceLoggedInProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-                //}
-                //else if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
-                //{
-                context.Load(context.Projects);
-                context.ExecuteQuery();
-                //    ProjectCollection projectDetails = context.Projects;
-                //    reply = GetLoggedInPMProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-                //}
-                //else if (GetUserGroup(context, "Web Administrators (Project Web App Synchronized)") || GetUserGroup(context, "Administrators for Project Web App") || GetUserGroup(context, "Portfolio Managers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Resource Managers for Project Web App"))
-                //{
-                //    context.Load(context.Projects);
-                //    context.ExecuteQuery();
-                //    ProjectCollection projectDetails = context.Projects;
-                //    reply = GetAllProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                if (GetUserGroup(context, "Team Members (Project Web App Synchronized)") || GetUserGroup(context, "Team Leads for Project Web App"))
+                {
+                    //   reply = GetResourceLoggedInProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                }
+                else if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
+                {
+                    context.Load(context.Projects);
+                    context.ExecuteQuery();
+                    ProjectCollection projectDetails = context.Projects;
+                    reply = GetLoggedInPMProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                }
+                else if (GetUserGroup(context, "Web Administrators (Project Web App Synchronized)") || GetUserGroup(context, "Administrators for Project Web App") || GetUserGroup(context, "Portfolio Managers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Resource Managers for Project Web App"))
+                {
+                    context.Load(context.Projects);
+                    context.ExecuteQuery();
+                    ProjectCollection projectDetails = context.Projects;
+                    reply = GetAllProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
 
-                //}
+                }
                 Counter = ProjectCounter;
             }
 

@@ -73,19 +73,6 @@ namespace PM.BotApplication.Dialogs
                     retry: "Sorry, I didn't understand that. Please try again."
                 );
             }
-
-            IMessageActivity messageActivity = null;
-            int Counter;
-            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
-            {
-                messageActivity = new Common.ProjectServerTeam(userName, password, UserLoggedInName).GetMSProjects(context, 10, false, false, false, false, out Counter);
-                if (messageActivity.Attachments.Count > 0)
-                {
-                    await context.PostAsync(messageActivity);
-                }
-            }
-
-            
         }
 
         public virtual async Task ResumeGetPassword(IDialogContext context, IAwaitable<string> UserEmail)
