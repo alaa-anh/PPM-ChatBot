@@ -488,7 +488,7 @@ namespace Common
         {
             IMessageActivity reply = dialogContext.MakeMessage();
 
-            //reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
 
             //SecureString passWord = new SecureString();
@@ -525,11 +525,13 @@ namespace Common
 
             //Counter = TaskCounter;
 
-            HeroCard plCard = new HeroCard()
-            {
-                Title = "Milestones",
-            };
-            reply.Attachments.Add(plCard.ToAttachment());
+            //HeroCard plCard = new HeroCard()
+            //{
+            //    Title = "Milestones",
+            //};
+            //reply.Attachments.Add(plCard.ToAttachment());
+
+            reply.Text = "kjkjkj";
 
             return reply;
         }
