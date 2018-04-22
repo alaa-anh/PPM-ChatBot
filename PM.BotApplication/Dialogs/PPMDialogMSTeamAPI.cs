@@ -48,6 +48,32 @@ namespace PM.BotApplication.Dialogs
         [LuisIntent("Greet.Welcome")]
         public async Task GreetWelcome(IDialogContext context, LuisResult luisResult)
         {
+
+            StringBuilder response = new StringBuilder();
+            if (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName))
+            {
+                if (this.msgReceivedDate.ToString("tt") == "AM")
+                {
+                    response.Append($"Good morning team, {UserLoggedInName}.. :)");
+                }
+                else
+                {
+                    response.Append($"Hey {UserLoggedInName}.. :)");
+                }
+                await context.PostAsync(response.ToString());
+                context.Wait(this.MessageReceived);
+
+            }
+            else
+            {
+                PromptDialog.Text(
+                    context: context,
+                    resume: ResumeGetPassword,
+                    prompt: "Dear , May I know your user name?",
+                    retry: "Sorry, I didn't understand that. Please try again."
+                );
+            }
+
             IMessageActivity messageActivity = null;
             int Counter;
             if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
@@ -59,30 +85,7 @@ namespace PM.BotApplication.Dialogs
                 }
             }
 
-            //StringBuilder response = new StringBuilder();
-            //if (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName))
-            //{
-            //    if (this.msgReceivedDate.ToString("tt") == "AM")
-            //    {
-            //        response.Append($"Good morning team, {UserLoggedInName}.. :)");
-            //    }
-            //    else
-            //    {
-            //        response.Append($"Hey {UserLoggedInName}.. :)");
-            //    }
-            //    await context.PostAsync(response.ToString());
-            //    context.Wait(this.MessageReceived);
-
-            //}
-            //else
-            //{
-            //    PromptDialog.Text(
-            //        context: context,
-            //        resume: ResumeGetPassword,
-            //        prompt: "Dear , May I know your user name?",
-            //        retry: "Sorry, I didn't understand that. Please try again."
-            //    );
-            //}
+            
         }
 
         public virtual async Task ResumeGetPassword(IDialogContext context, IAwaitable<string> UserEmail)
