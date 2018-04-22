@@ -299,7 +299,7 @@ namespace PM.BotApplication.Dialogs
                     {
                         //if (messageActivity.Attachments.Count > 0)
                         //{
-                        //    await context.PostAsync(messageActivity);
+                            await context.PostAsync(messageActivity);
                         //}
                         // await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, ListName));
 

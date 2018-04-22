@@ -525,11 +525,11 @@ namespace Common
 
             //Counter = TaskCounter;
 
-            //HeroCard plCard = new HeroCard()
-            //{
-            //    Title = "Milestones",
-            //};
-            //reply.Attachments.Add(plCard.ToAttachment());
+            HeroCard plCard = new HeroCard()
+            {
+                Title = "Milestones",
+            };
+            reply.Attachments.Add(plCard.ToAttachment());
 
             reply.Text = "kjkjkj";
 
