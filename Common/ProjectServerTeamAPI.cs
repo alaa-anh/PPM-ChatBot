@@ -1005,7 +1005,7 @@ namespace Common
                             AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "'&$orderby=ProjectStartDate";
 
                         else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdate + "' and ProjectStartDate ge DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "' and ProjectStartDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
                     }
                     else if (ProjectSEdateFlag == "Finish")
                     {
@@ -1014,7 +1014,7 @@ namespace Common
                         else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
                             AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
                         else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedstartdate + "' and ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "' and ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
                     }
 
                     endpointUri = new Uri(webUri + AdminAPI);
