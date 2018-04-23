@@ -2302,14 +2302,17 @@ namespace Common
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            string valuebutton = string.Empty;
+            List<CardAction> cardButtons = new List<CardAction>();
+            double p = totalCount * 0.1;
+            double result = Math.Ceiling(p);
+            int pagenumber = int.Parse(result.ToString());
+
             if (totalCount > 10)
             {
-                List<CardAction> cardButtons = new List<CardAction>();
-                double p = totalCount * 0.1;
-                double result = Math.Ceiling(p);
-                int pagenumber = int.Parse(result.ToString());
+                
 
-                string valuebutton = string.Empty;
+              
                 for (int i = 0; i < pagenumber; i++)
                 {
                     string CurrentNumber = Convert.ToString(i);
