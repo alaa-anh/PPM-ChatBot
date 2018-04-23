@@ -137,8 +137,8 @@ namespace Common
                     string ProjectName = (string)item["ProjectName"];
                     string ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
                     string ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
-                    string ProjectFinishDate = (string)item["ProjectFinishDate"];
-                    string ProjectStartDate = (string)item["ProjectStartDate"];
+                    DateTime ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
+                    DateTime ProjectStartDate = (DateTime)item["ProjectStartDate"];
                     string ProjectDuration = (string)item["ProjectDuration"];
                     string ProjectOwnerName = (string)item["ProjectOwnerName"];
 
@@ -147,16 +147,16 @@ namespace Common
                     if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
                     {
                         SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                        SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+                        SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
                         SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
                         SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
                     }
 
                     else if (ProjectDates == true)
                     {
-                        SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+                        SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
                     }
                     else if (PDuration == true)
                     {
