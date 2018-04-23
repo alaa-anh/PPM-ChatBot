@@ -159,7 +159,6 @@ namespace PM.BotApplication.Dialogs
                         await context.PostAsync(messageActivity);
                     }
                     await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
-                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
 
                     if (Counter > 10)
                     {
