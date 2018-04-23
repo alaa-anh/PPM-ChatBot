@@ -159,6 +159,8 @@ namespace PM.BotApplication.Dialogs
                         await context.PostAsync(messageActivity);
                     }
                     await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
+                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+
                     if (Counter > 10)
                     {
                         if (Counter > 100)
@@ -166,7 +168,7 @@ namespace PM.BotApplication.Dialogs
                         else
                             await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
 
-                        //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
                     }
                 }
             }
@@ -441,11 +443,11 @@ namespace PM.BotApplication.Dialogs
         [LuisIntent("FilterProjects")]
         public async Task FilterProjects(IDialogContext context, LuisResult luisResult)
         {
+            IMessageActivity messageActivity = context.MakeMessage();
             if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
                 EntityRecommendation completionVal;
                 EntityRecommendation ProjectItemIndex;
-
                 int itemStartIndex = 0;
                 int Counter;
                 int completionpercentVal = 0;
@@ -454,14 +456,11 @@ namespace PM.BotApplication.Dialogs
                 {
                     itemStartIndex = int.Parse(ProjectItemIndex.Entity);
                 }
-
-
-
                 if (luisResult.TryFindEntity("completionVal", out completionVal))
                     completionpercentVal = int.Parse(completionVal.Entity.ToString());
 
 
-                IMessageActivity messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, out Counter);
+                 messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, out Counter);
 
 
 

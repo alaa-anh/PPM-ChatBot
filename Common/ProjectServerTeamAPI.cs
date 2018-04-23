@@ -809,7 +809,7 @@ namespace Common
             string DeliverableName = string.Empty;
             string DeliverableStart = string.Empty;
             string DeliverableFinish = string.Empty;
-
+            string CreateByResource = string.Empty;
 
 
             Counter = jArrays.Count;
@@ -826,23 +826,29 @@ namespace Common
                     var item = jArrays[startIndex];
 
                     if (item["Title"] != null)
-                        DeliverableName = (string)item["Title"];
-                    SubtitleVal += "Deliverable Name\n" + DeliverableName + "</br>";
-
-                    if (item["Author"] != null)
                     {
-                       // FieldUserValue fuv = (FieldUserValue)item["Author"];
-                       // SubtitleVal += "Create By Resource :\n" + fuv.LookupValue + "</br>";
+                        DeliverableName = (string)item["Title"];
+                        SubtitleVal += "Deliverable Name\n" + DeliverableName + "</br>";
+                    }
+
+                    if (item["CreateByResource"] != null)
+                    {
+                        DeliverableStart = item["CreateByResource"].ToString();
+                        SubtitleVal += "Start Date :\n" + DeliverableStart + "</br>";
 
                     }
 
-                    if (item["CommitmentStart"] != null)
-                        DeliverableStart = item["CommitmentStart"].ToString();
-                    SubtitleVal += "Start Date :\n" + DeliverableStart + "</br>";
+                    if (item["StartDate"] != null)
+                    {
+                        DeliverableStart = item["StartDate"].ToString();
+                        SubtitleVal += "Start Date :\n" + DeliverableStart + "</br>";
+                    }
 
-                    if (item["CommitmentFinish"] != null)
-                        DeliverableFinish = item["CommitmentFinish"].ToString();
-                    SubtitleVal += "Finish Date :\n" + DeliverableFinish + "</br>";
+                    if (item["FinishDate"] != null)
+                    {
+                        DeliverableFinish = item["FinishDate"].ToString();
+                        SubtitleVal += "Finish Date :\n" + DeliverableFinish + "</br>";
+                    }
 
 
                     HeroCard plCard = new HeroCard()
@@ -950,406 +956,52 @@ namespace Common
             reply = dialogContext.MakeMessage();
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
-            using (ProjectContext context = new ProjectContext(_siteUri))
+
+            SecureString passWord = new SecureString();
+            foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+            SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+            var webUri = new Uri(_siteUri);
+            string AdminAPI = "/_api/ProjectData/Projects";
+            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "'";
+            Uri endpointUri = null;
+            int ProjectCounter = 0;
+            using (var client = new WebClient())
             {
-                SecureString passWord = new SecureString();
-                foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
-                context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+                client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
+                client.Credentials = credentials;
+                client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
-                context.Load(context.Projects);
-                context.ExecuteQuery();
-
-                int ProjectCounter = 0;
-
-                if (completionpercentVal > 0)
+                if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    IEnumerable<PublishedProject> projs = context.LoadQuery(context.Projects.Where(p => p.PercentComplete == completionpercentVal));
-                    context.ExecuteQuery();
+                    endpointUri = new Uri(webUri + PMAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                    if (projs.Any())
-                    {
-                        if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
-                        {
-                            //reply = GetResourceLoggedInFilProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-                        }
-                        else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
-                        {
-                            reply = GetFilteredProjects(dialogContext, context, projs, SIndex, completionpercentVal, out ProjectCounter);
-                        }
-                        else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup( "Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
-                        {
-                            reply = GetFilteredProjects(dialogContext, context, projs, SIndex, completionpercentVal, out ProjectCounter);
-                        }
-
-
-
-                        Counter = ProjectCounter;
-                    }
+                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, out ProjectCounter);
 
                 }
-
-            }
-
-            return reply;
-        }
-
-        public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, ProjectContext context, IEnumerable<PublishedProject> publishedProject, int SIndex, int completionpercentVal, out int Counter)
-        {
-            IMessageActivity reply = null;
-            reply = dialogContext.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-
-            int inDexToVal = SIndex + 10;
-            Counter = publishedProject.Count();
-            if (inDexToVal >= publishedProject.Count())
-                inDexToVal = publishedProject.Count();
-
-
-            foreach (PublishedProject pro in publishedProject)
-            {
-                context.Load(pro.Owner);
-                context.Load(pro, p => p.ProjectSiteUrl);
-                context.ExecuteQuery();
-
-                string ProjectName = pro.Name;
-                string ProjectWorkspaceInternalUrl = pro.ProjectSiteUrl;
-                string ProjectPercentCompleted = pro.PercentComplete.ToString();
-                string ProjectFinishDate = pro.FinishDate.ToString();
-                string ProjectStartDate = pro.StartDate.ToString();
-                TimeSpan duration = pro.FinishDate - pro.StartDate;
-                string ProjectDuration = duration.Days.ToString();
-                string ProjectOwnerName = pro.Owner.Title;
-                string SubtitleVal = "";
-                SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
-                SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
-                SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
-
-                string ImageURL = "http://02-code.com/images/logo.jpg";
-                List<CardImage> cardImages = new List<CardImage>();
-                List<CardAction> cardactions = new List<CardAction>();
-                cardImages.Add(new CardImage(url: ImageURL));
-                CardAction btnWebsite = new CardAction()
+                else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
                 {
-                    Type = ActionTypes.OpenUrl,
-                    Title = "Open",
-                    Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
-                };
-                CardAction btnTasks = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Tasks",
-                    Value = "show a list of " + ProjectName + " tasks",
-                    //  DisplayText = "show a list of " + ProjectName + " tasks",
-                    Text = "show a list of " + ProjectName + " tasks",
-                };
-                cardactions.Add(btnTasks);
+                    if(completionpercentVal ==100)
+                        AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted eq "+ completionpercentVal;
+                    if (completionpercentVal == 90)
+                        AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted lt 100";
 
-                CardAction btnIssues = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Issues",
-                    Value = "show a list of " + ProjectName + " issues",
-                    Text = "show a list of " + ProjectName + " issues"
-                };
-                cardactions.Add(btnIssues);
-
-                CardAction btnRisks = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Risks",
-                    Value = "Show risks and the assigned resources of " + ProjectName,
-                    Text = "Show risks and the assigned resources of " + ProjectName,
-
-                };
-                cardactions.Add(btnRisks);
-
-                CardAction btnDeliverables = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Deliverables",
-                    Value = "Show " + ProjectName + " deliverables",
-                    Text = "Show " + ProjectName + " deliverables",
-                };
-                cardactions.Add(btnDeliverables);
-
-                CardAction btnDAssignments = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Assignments",
-                    Value = "get " + ProjectName + " assignments",
-                    Text = "get " + ProjectName + " assignments",
-
-                };
-                cardactions.Add(btnDAssignments);
-
-                HeroCard plCard = new HeroCard()
-                {
-                    Title = ProjectName,
-                    Subtitle = SubtitleVal,
-                    Images = cardImages,
-                    Buttons = cardactions,
-                    Tap = btnTasks,
-                };
-                reply.Attachments.Add(plCard.ToAttachment());
-            }
-
-            return reply;
-        }
-
-        public IMessageActivity GetLoggedInPMProjects(IDialogContext dialogContext, ProjectContext context, ProjectCollection projectDetails, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
-        {
-            IMessageActivity reply = null;
-            reply = dialogContext.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-
-            int inDexToVal = SIndex + 10;
-            Counter = 0;
-            //Counter = projectDetails.Count;
-            //if (inDexToVal >= projectDetails.Count)
-            //    inDexToVal = projectDetails.Count;
-
-            foreach (PublishedProject pro in projectDetails)
-            {
-                //  PublishedProject pro = context.Projects[startIndex];
-                context.Load(pro.Owner);
-                context.Load(pro, p => p.ProjectSiteUrl);
-                context.ExecuteQuery();
-
-
-                if (pro.Owner.Email == _userName)
-                {
-                    Counter++;
-                    string ProjectName = pro.Name;
-                    string ProjectWorkspaceInternalUrl = pro.ProjectSiteUrl;
-                    string ProjectPercentCompleted = pro.PercentComplete.ToString();
-                    string ProjectFinishDate = pro.FinishDate.ToString();
-                    string ProjectStartDate = pro.StartDate.ToString();
-                    TimeSpan duration = pro.FinishDate - pro.StartDate;
-                    string ProjectDuration = duration.Days.ToString();
-                    string ProjectOwnerName = pro.Owner.Title;
-                    string SubtitleVal = "";
-                    if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
-                    {
-                        SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                        SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
-                        SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
-                        SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
-                    }
-
-                    else if (ProjectDates == true)
-                    {
-                        SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
-                    }
-                    else if (PDuration == true)
-                    {
-                        SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
-                    }
-                    else if (projectManager == true)
-                    {
-                        SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
-                    }
-                    string ImageURL = "http://02-code.com/images/logo.jpg";
-                    List<CardImage> cardImages = new List<CardImage>();
-                    List<CardAction> cardactions = new List<CardAction>();
-                    cardImages.Add(new CardImage(url: ImageURL));
-                    CardAction btnWebsite = new CardAction()
-                    {
-                        Type = ActionTypes.OpenUrl,
-                        Title = "Open",
-                        Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
-                    };
-                    CardAction btnTasks = new CardAction()
-                    {
-                        Type = ActionTypes.PostBack,
-                        Title = "Tasks",
-                        Value = "show a list of " + ProjectName + " tasks",
-                        //  DisplayText = "show a list of " + ProjectName + " tasks",
-                        Text = "show a list of " + ProjectName + " tasks",
-                    };
-                    cardactions.Add(btnTasks);
-
-                    CardAction btnIssues = new CardAction()
-                    {
-                        Type = ActionTypes.PostBack,
-                        Title = "Issues",
-                        Value = "show a list of " + ProjectName + " issues",
-                        Text = "show a list of " + ProjectName + " issues"
-                    };
-                    cardactions.Add(btnIssues);
-
-                    CardAction btnRisks = new CardAction()
-                    {
-                        Type = ActionTypes.PostBack,
-                        Title = "Risks",
-                        Value = "Show risks and the assigned resources of " + ProjectName,
-                        Text = "Show risks and the assigned resources of " + ProjectName,
-
-                    };
-                    cardactions.Add(btnRisks);
-
-                    CardAction btnDeliverables = new CardAction()
-                    {
-                        Type = ActionTypes.PostBack,
-                        Title = "Deliverables",
-                        Value = "Show " + ProjectName + " deliverables",
-                        Text = "Show " + ProjectName + " deliverables",
-                    };
-                    cardactions.Add(btnDeliverables);
-
-                    CardAction btnAssignments = new CardAction()
-                    {
-                        Type = ActionTypes.PostBack,
-                        Title = "Assignments",
-                        Value = "get " + ProjectName + " assignments",
-                        Text = "get " + ProjectName + " assignments",
-
-                    };
-                    cardactions.Add(btnAssignments);
-
-                    CardAction btnMilestones = new CardAction()
-                    {
-                        Type = ActionTypes.PostBack,
-                        Title = "Milestones",
-                        Value = "get " + ProjectName + " milestones",
-                        Text = "get " + ProjectName + " milestones",
-
-                    };
-                    cardactions.Add(btnMilestones);
-
-                    HeroCard plCard = new HeroCard()
-                    {
-                        Title = ProjectName,
-                        Subtitle = SubtitleVal,
-                        Images = cardImages,
-                        Buttons = cardactions,
-                        Tap = btnTasks,
-                    };
-                    reply.Attachments.Add(plCard.ToAttachment());
-                    if (Counter == 10)
-                        break;
+                    endpointUri = new Uri(webUri + AdminAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllProjects(dialogContext, jArrays, SIndex, false, false, false, false, out ProjectCounter);
                 }
             }
-
+            Counter = ProjectCounter;
             return reply;
         }
-        public IMessageActivity GetResourceLoggedInProjects(IDialogContext dialogContext, ProjectContext context, ProjectCollection projectDetails, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
-        {
-            IMessageActivity reply = null;
-            reply = dialogContext.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-
-            int inDexToVal = SIndex + 10;
-            Counter = projectDetails.Count;
-            if (inDexToVal >= projectDetails.Count)
-                inDexToVal = projectDetails.Count;
-
-            for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
-            {
-                PublishedProject pro = context.Projects[startIndex];
-                context.Load(pro.Owner);
-                //  context.Load(pro, p => p.ProjectSiteUrl);
-                context.ExecuteQuery();
-
-                string ProjectName = pro.Name;
-                //     string ProjectWorkspaceInternalUrl = pro.ProjectSiteUrl;
-                string ProjectPercentCompleted = pro.PercentComplete.ToString();
-                string ProjectFinishDate = pro.FinishDate.ToString();
-                string ProjectStartDate = pro.StartDate.ToString();
-                TimeSpan duration = pro.FinishDate - pro.StartDate;
-                string ProjectDuration = duration.Days.ToString();
-                // string ProjectOwnerName = pro.Owner.Title;
-                string SubtitleVal = "";
-                if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
-                {
-                    SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                    SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                    SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
-                    SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
-                    //   SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
-                }
-                else if (showCompletion == true)
-                    SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                else if (ProjectDates == true)
-                {
-                    SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                    SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
-                }
-                else if (PDuration == true)
-                {
-                    SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
-                }
-                //else if (projectManager == true)
-                //{
-                //    SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
-                //}
-                string ImageURL = "http://02-code.com/images/logo.jpg";
-                List<CardImage> cardImages = new List<CardImage>();
-                List<CardAction> cardactions = new List<CardAction>();
-                cardImages.Add(new CardImage(url: ImageURL));
-                //CardAction btnWebsite = new CardAction()
-                //{
-                //    Type = ActionTypes.OpenUrl,
-                //    Title = "Open",
-                //    Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
-                //};
-                CardAction btnTasks = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Tasks",
-                    Value = "show a list of " + ProjectName + " tasks",
-                };
-                cardactions.Add(btnTasks);
-
-                CardAction btnIssues = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Issues",
-                    Value = "show a list of " + ProjectName + " issues",
-                };
-                cardactions.Add(btnIssues);
-
-                CardAction btnRisks = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Risks",
-                    Value = "Show risks and the assigned resources of " + ProjectName,
-                };
-                cardactions.Add(btnRisks);
-
-                //CardAction btnDeliverables = new CardAction()
-                //{
-                //    Type = ActionTypes.PostBack,
-                //    Title = "Deliverables",
-                //    Value = "Show " + ProjectName + " deliverables",
-                //};
-                //cardactions.Add(btnDeliverables);
-
-                CardAction btnDAssignments = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Assignments",
-                    Value = "get " + ProjectName + " assignments",
-                };
-                cardactions.Add(btnDAssignments);
-
-                HeroCard plCard = new HeroCard()
-                {
-                    Title = ProjectName,
-                    Subtitle = SubtitleVal,
-                    Images = cardImages,
-                    Buttons = cardactions,
-                    Tap = btnTasks,
-                };
-                reply.Attachments.Add(plCard.ToAttachment());
-            }
-
-            return reply;
-        }
-
+        
         public IMessageActivity FilterProjectsByDate(IDialogContext dialogContext, string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, out int Counter)
         {
             IMessageActivity reply = null;
@@ -1632,395 +1284,779 @@ namespace Common
 
             return pName;
         }
-        //private IMessageActivity GetResourceLoggedInTasks(IDialogContext dialogContext, int SIndex, ProjectContext context, PublishedProject proj, bool Completed, bool NotCompleted, bool delayed, out int Counter)
-        //{
-        //    var SubtitleVal = "";
-        //    IMessageActivity reply = null;
-        //    reply = dialogContext.MakeMessage();
-        //    context.Load(proj.Assignments, da => da.Where(a => a.Resource.Email != string.Empty && a.Resource.Email == _userName));
-        //    context.ExecuteQuery();
-        //    Counter = 0;
-
-
-
-        //    if (proj.Assignments != null)
-        //    {
-        //        PublishedAssignmentCollection proAssignment = proj.Assignments;
-
-        //        int inDexToVal = SIndex + 10;
-        //        Counter = proAssignment.Count;
-        //        if (inDexToVal >= proAssignment.Count)
-        //            inDexToVal = proAssignment.Count;
-
-        //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
-        //        {
-        //            PublishedAssignment ass = proAssignment[startIndex];
-        //            context.Load(ass.Task);
-        //            context.Load(ass.Resource);
-
-        //            context.ExecuteQuery();
-        //            var tsk = ass.Task;
-        //            string TaskName = tsk.Name;
-        //            string TaskDuration = tsk.Duration;
-        //            string TaskPercentCompleted = tsk.PercentComplete.ToString();
-        //            string TaskStartDate = tsk.Start.ToString();
-        //            string TaskFinishDate = tsk.Finish.ToString();
-
-        //            SubtitleVal += "Task Duration\n" + TaskDuration + "</br>";
-        //            SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
-        //            SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
-        //            SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
-
-        //            HeroCard plCard = new HeroCard()
-        //            {
-        //                Title = TaskName,
-        //                Subtitle = SubtitleVal,
-
-        //            };
-        //            reply.Attachments.Add(plCard.ToAttachment());
-        //        }
-        //    }
-        //    return reply;
-        //}
-
-
-        //private IMessageActivity GetResourceLoggedInIssues(IDialogContext dialogContext, ListItemCollection itemsIssue, int SIndex, out int Counter)
-        //{
-        //    IMessageActivity reply = null;
-        //    reply = dialogContext.MakeMessage();
-        //    Counter = 0;
-
-
-
-        //    int inDexToVal = SIndex + 10;
-        //    if (inDexToVal >= itemsIssue.Count)
-        //        inDexToVal = itemsIssue.Count;
-
-
-        //    if (itemsIssue.Count > 0)
-        //    {
-        //        int count = 0;
-        //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
-        //        {
-        //            ListItem item = itemsIssue[startIndex];
-
-        //            if (item["AssignedTo"] != null)
-        //            {
-        //                count++;
-        //                FieldUserValue fuv = (FieldUserValue)item["AssignedTo"];
-        //                if (fuv.Email == _userName)
-        //                {
-        //                    string SubtitleVal = "";
-        //                    string IssueName = string.Empty;
-        //                    string IssueStatus = string.Empty;
-        //                    string IssuePriority = string.Empty;
-
-        //                    if (item["Title"] != null)
-        //                        IssueName = (string)item["Title"];
-        //                    if (item["Status"] != null)
-        //                        IssueStatus = (string)item["Status"];
-        //                    if (item["Priority"] != null)
-        //                        IssuePriority = (string)item["Priority"];
-        //                    SubtitleVal += "Status\n" + IssueStatus + "</br>";
-        //                    SubtitleVal += "Priority\n" + IssuePriority + "</br>";
-        //                    HeroCard plCard = new HeroCard()
-        //                    {
-        //                        Title = IssueName,
-        //                        Subtitle = SubtitleVal,
-        //                    };
-        //                    reply.Attachments.Add(plCard.ToAttachment());
-        //                }
-        //            }
-        //        }
-        //        Counter = count;
-        //    }
-        //    return reply;
-        //}
 
 
 
-        //private IMessageActivity GetResourceLoggedInRisks(IDialogContext dialogContext, ListItemCollection itemsRisk, int SIndex, out int Counter)
-        //{
-        //    IMessageActivity reply = null;
-        //    reply = dialogContext.MakeMessage();
-        //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-        //    Counter = 0;
-        //    string RiskName = string.Empty;
-        //    string ResourceName = string.Empty;
-        //    string riskStatus = string.Empty;
-        //    string riskImpact = string.Empty;
-        //    string riskProbability = string.Empty;
-        //    string riskCostExposure = string.Empty;
-        //    if (itemsRisk.Count > 0)
-        //    {
-        //        int count = 0;
-
-        //        int inDexToVal = SIndex + 10;
-        //        if (inDexToVal >= itemsRisk.Count)
-        //            inDexToVal = itemsRisk.Count;
-        //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
-        //        {
-        //            var SubtitleVal = "";
-        //            ListItem item = itemsRisk[startIndex];
-
-
-        //            if (item["AssignedTo"] != null)
-        //            {
-        //                count++;
-        //                FieldUserValue fuv = (FieldUserValue)item["AssignedTo"];
-        //                if (fuv.Email == _userName)
-        //                {
-        //                    if (item["Title"] != null)
-        //                        RiskName = (string)item["Title"];
-        //                    SubtitleVal += "Risk Title\n" + RiskName + "</br>";
-
-        //                    SubtitleVal += "Assigned To Resource\n" + fuv.LookupValue + "</br>";
-        //                    if (item["Status"] != null)
-        //                        riskStatus = (string)item["Status"];
-        //                    SubtitleVal += "Risk Status\n" + riskStatus + "</br>";
-
-        //                    if (item["Impact"] != null)
-        //                        riskImpact = item["Impact"].ToString();
-        //                    SubtitleVal += "Risk Impact\n" + riskImpact + "</br>";
-
-        //                    if (item["Probability"] != null)
-        //                        riskProbability = item["Probability"].ToString();
-        //                    SubtitleVal += "Risk Probability\n" + riskProbability + "</br>";
-
-        //                    if (item["Exposure"] != null)
-        //                        riskCostExposure = item["Exposure"].ToString();
-        //                    SubtitleVal += "Risk CostExposure\n" + riskCostExposure + "</br>";
-
-        //                    HeroCard plCard = new HeroCard()
-        //                    {
-        //                        Title = RiskName,
-        //                        Subtitle = SubtitleVal,
-        //                    };
-        //                    reply.Attachments.Add(plCard.ToAttachment());
-
-        //                }
-
-        //            }
-        //            Counter = count;
-
-
-        //        }
-
-        //    }
-
-        //    return reply;
-        //}
-
-
-
-        //public IMessageActivity GetResourceAssignments(IDialogContext dialogContext, int SIndex, string ResourceName, out int Counter)
-        //{
-        //    IMessageActivity reply = null;
-        //    reply = dialogContext.MakeMessage();
-        //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-        //    int counttotalAss = 0;
-        //    Counter = 0;
-        //    using (ProjectContext context = new ProjectContext(_siteUri))
-        //    {
-
-
-        //        SecureString passWord = new SecureString();
-        //        foreach (char c in _userPassword.ToCharArray()) passWord.AppendChar(c);
-        //        context.Credentials = new SharePointOnlineCredentials(_userName, passWord);
-
-
-        //        context.Load(context.Projects);
-        //        context.ExecuteQuery();
-        //        ProjectCollection projcoll = context.Projects;
-
-
-        //        context.Load(context.EnterpriseResources);
-        //        var resources = context.EnterpriseResources;
-
-        //        context.ExecuteQuery();
-
-
-        //        ResourceName = ResourceName.Replace(" ", String.Empty);
-
-        //        string fullEmail = string.Concat(ResourceName, ConfigurationManager.AppSettings["DomainEmail"]);
-
-        //        var user = context.Web.EnsureUser(ResourceName);
-        //        context.Load(user);
-        //        context.ExecuteQuery();
-
-        //        if (user != null)
-        //        {
-        //            var resource = resources.FirstOrDefault(i => i.Email == user.Email);
-        //            if (resource != null)
-        //            {
-
-        //                foreach (PublishedProject proj in projcoll)
-        //                {
-        //                    context.Load(proj.Assignments, da => da.Where(a => a.Resource.Email == user.Email));
-
-        //                    context.ExecuteQuery();
-        //                    PublishedAssignmentCollection itemsAssignments = proj.Assignments;
-
-        //                    if (proj.Assignments != null)
-        //                    {
-        //                        int inDexToVal = SIndex + 10;
-        //                        if (inDexToVal >= itemsAssignments.Count)
-        //                            inDexToVal = itemsAssignments.Count;
-
-        //                        PublishedAssignmentCollection proAssignment = proj.Assignments;
-        //                        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
-        //                        {
-        //                            PublishedAssignment ass = itemsAssignments[startIndex];
-        //                            string SubtitleVal = "";
-        //                            context.Load(ass.Task);
-        //                            context.ExecuteQuery();
-        //                            var tsk = ass.Task;
-        //                            SubtitleVal += "Assignment Start Date :\n" + ass.Start + "</br>";
-        //                            SubtitleVal += "Task Name :\n" + tsk.Name + "</br>";
-        //                            counttotalAss++;
-
-
-        //                            HeroCard plCard = new HeroCard()
-        //                            {
-        //                                Title = proj.Name,
-        //                                Subtitle = SubtitleVal,
-        //                            };
-        //                            reply.Attachments.Add(plCard.ToAttachment());
-        //                        }
-        //                        Counter = counttotalAss;
-
-        //                    }
-        //                }
-
-
-        //            }
-
-        //        }
-
-
-
-
-        //        return reply;
-        //    }
-
-        //}
-
-        //public IMessageActivity GetResourceLoggedInAssignments(IDialogContext dialogContext, ProjectContext context, PublishedAssignmentCollection itemsAssignments, int SIndex, string ResourceName, out int Counter)
-        //{
-        //    IMessageActivity reply = null;
-        //    reply = dialogContext.MakeMessage();
-        //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-        //    Counter = 0;
-        //    int count = 0;
-        //    if (itemsAssignments.Count > 0)
-        //    {
-        //        int inDexToVal = SIndex + 10;
-        //        if (inDexToVal >= itemsAssignments.Count)
-        //            inDexToVal = itemsAssignments.Count;
-
-        //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
-        //        {
-        //            PublishedAssignment ass = itemsAssignments[startIndex];
-
-        //            context.Load(ass.Task);
-        //            context.Load(ass.Resource);
-        //            context.ExecuteQuery();
-
-        //            if (ass.Resource.Email == ResourceName)
-        //            {
-        //                count++;
-        //                string SubtitleVal = "";
-        //                string TaskName = ass.Task.Name;
-        //                SubtitleVal += "Resource Name :\n" + ass.Resource.Name + "</br>";
-        //                SubtitleVal += "Start Date\n" + ass.Start + "</br>";
-        //                SubtitleVal += "Finish Date\n" + ass.Finish + "</br>";
-
-
-        //                HeroCard plCard = new HeroCard()
-        //                {
-        //                    Title = TaskName,
-        //                    Subtitle = SubtitleVal,
-        //                };
-        //                reply.Attachments.Add(plCard.ToAttachment());
-        //            }
-        //        }
-        //        Counter = count;
-        //    }
-        //    return reply;
-
-        //}
-        //public bool UserHavePermissionOnaProjects(string siteUrl, string subSiteTitle, ProjectContext context)
-        //{
-
-        //    var web = context.Web;
-        //    bool exist = false;
-        //    context.Load(web, w => w.Webs);
-        //    context.ExecuteQuery();
-        //    foreach (Web subWeb in web.Webs)
-        //    {
-        //        if (subWeb.Title.ToLower() == subSiteTitle.ToLower())
-        //        {
-        //            var user = subWeb.EnsureUser(_userName);
-        //            context.Load(user);
-        //            context.ExecuteQuery();
-
-        //            if (null != user)
-        //            {
-        //                ClientResult<BasePermissions> permissions = subWeb.GetUserEffectivePermissions(user.LoginName);
-        //                context.ExecuteQuery();
-
-
-        //                if (permissions.Value.Has(PermissionKind.ViewListItems))
-        //                {
-        //                    exist = true;
-        //                    break;
-        //                }
-        //                else
-        //                    exist = false;
-
-
-        //            }
-        //            else
-        //                exist = false;
-
-
-
-
-        //        }
-        //    }
-
-        //    return exist;
-        //}
-
-
-
-        //private static PublishedProject GetProjectByName(string name, ProjectContext context)
-        //{
-        //    if (name.Contains(" - "))
-        //        name = name.Replace(" - ", "-");
-        //    IEnumerable<PublishedProject> projs = context.LoadQuery(context.Projects.Where(p => p.Name == name));
-        //    context.ExecuteQuery();
-        //    if (!projs.Any())       // no project found
-        //    {
-        //        return null;
-        //    }
-        //    return projs.FirstOrDefault();
-
-        //}
-
-        //private static Web GetProjectWEB(string siteurl, ProjectContext context)
-        //{
-        //    IEnumerable<Web> webs = context.LoadQuery(context.Web.Webs.Where(p => p.Url == siteurl));
-        //    context.ExecuteQuery();
-        //    if (!webs.Any())       // no project found
-        //    {
-        //        return null;
-        //    }
-        //    return webs.FirstOrDefault();
-
-        //}
-
-        public IMessageActivity TotalCountGeneralMessage(IDialogContext dialogContext, int SIndex, int Counter, string ListName)
+        public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, List<JToken> jArrays, int SIndex, int completionpercentVal, out int Counter)
+        {
+            IMessageActivity reply = null;
+            reply = dialogContext.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            Counter = 0;
+            IEnumerable<JToken> jToken = null;
+           
+
+            if (jArrays.Count > 0)
+            {
+                if (completionpercentVal == 100)
+                     jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] == 100);
+                else if (completionpercentVal == 90)
+                    jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] < 100);
+
+                if(jToken.Any())
+                {
+                    if(jToken.Count() > 0)
+                    {
+                        int inDexToVal = SIndex + 10;
+                        Counter = jToken.Count();
+                        if (inDexToVal >= jToken.Count())
+                            inDexToVal = jToken.Count();
+
+                        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+                        {
+                            var item = jToken.ElementAt(startIndex);
+                            string SubtitleVal = "";
+                            string ProjectName = (string)item["ProjectName"];
+                            string ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
+                            string ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
+                            string ProjectFinishDate = (string)item["ProjectFinishDate"];
+                            string ProjectStartDate = (string)item["ProjectStartDate"];
+                            string ProjectDuration = (string)item["ProjectDuration"];
+                            string ProjectOwnerName = (string)item["ProjectOwnerName"];
+
+                            SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
+                            SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
+                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+                            SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+                            SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+                            SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
+                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+                            SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+                            SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+
+                            string ImageURL = "http://02-code.com/images/logo.jpg";
+                            List<CardImage> cardImages = new List<CardImage>();
+                            List<CardAction> cardactions = new List<CardAction>();
+                            cardImages.Add(new CardImage(url: ImageURL));
+                            CardAction btnWebsite = new CardAction()
+                            {
+                                Type = ActionTypes.OpenUrl,
+                                Title = "Open",
+                                Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
+                            };
+                            CardAction btnTasks = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Tasks",
+                                Value = "show a list of " + ProjectName + " tasks",
+                                //  DisplayText = "show a list of " + ProjectName + " tasks",
+                                Text = "show a list of " + ProjectName + " tasks",
+                            };
+                            cardactions.Add(btnTasks);
+
+                            CardAction btnIssues = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Issues",
+                                Value = "show a list of " + ProjectName + " issues",
+                                Text = "show a list of " + ProjectName + " issues"
+                            };
+                            cardactions.Add(btnIssues);
+
+                            CardAction btnRisks = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Risks",
+                                Value = "Show risks and the assigned resources of " + ProjectName,
+                                Text = "Show risks and the assigned resources of " + ProjectName,
+
+                            };
+                            cardactions.Add(btnRisks);
+
+                            CardAction btnDeliverables = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Deliverables",
+                                Value = "Show " + ProjectName + " deliverables",
+                                Text = "Show " + ProjectName + " deliverables",
+                            };
+                            cardactions.Add(btnDeliverables);
+
+                            CardAction btnAssignments = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Assignments",
+                                Value = "get " + ProjectName + " assignments",
+                                Text = "get " + ProjectName + " assignments",
+
+                            };
+                            cardactions.Add(btnAssignments);
+
+                            CardAction btnMilestones = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Milestones",
+                                Value = "get " + ProjectName + " milestones",
+                                Text = "get " + ProjectName + " milestones",
+
+                            };
+                            cardactions.Add(btnMilestones);
+
+                            HeroCard plCard = new HeroCard()
+                            {
+                                Title = ProjectName,
+                                Subtitle = SubtitleVal,
+                                Images = cardImages,
+                                Buttons = cardactions,
+                                Tap = btnTasks,
+                            };
+                            reply.Attachments.Add(plCard.ToAttachment());
+                        }
+                    }
+                }
+            }
+            
+            return reply;
+        }
+            //private IMessageActivity GetResourceLoggedInTasks(IDialogContext dialogContext, int SIndex, ProjectContext context, PublishedProject proj, bool Completed, bool NotCompleted, bool delayed, out int Counter)
+            //{
+            //    var SubtitleVal = "";
+            //    IMessageActivity reply = null;
+            //    reply = dialogContext.MakeMessage();
+            //    context.Load(proj.Assignments, da => da.Where(a => a.Resource.Email != string.Empty && a.Resource.Email == _userName));
+            //    context.ExecuteQuery();
+            //    Counter = 0;
+
+
+
+            //    if (proj.Assignments != null)
+            //    {
+            //        PublishedAssignmentCollection proAssignment = proj.Assignments;
+
+            //        int inDexToVal = SIndex + 10;
+            //        Counter = proAssignment.Count;
+            //        if (inDexToVal >= proAssignment.Count)
+            //            inDexToVal = proAssignment.Count;
+
+            //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+            //        {
+            //            PublishedAssignment ass = proAssignment[startIndex];
+            //            context.Load(ass.Task);
+            //            context.Load(ass.Resource);
+
+            //            context.ExecuteQuery();
+            //            var tsk = ass.Task;
+            //            string TaskName = tsk.Name;
+            //            string TaskDuration = tsk.Duration;
+            //            string TaskPercentCompleted = tsk.PercentComplete.ToString();
+            //            string TaskStartDate = tsk.Start.ToString();
+            //            string TaskFinishDate = tsk.Finish.ToString();
+
+            //            SubtitleVal += "Task Duration\n" + TaskDuration + "</br>";
+            //            SubtitleVal += "Task Percent Completed\n" + TaskPercentCompleted + "</br>";
+            //            SubtitleVal += "Task Start Date\n" + TaskStartDate + "</br>";
+            //            SubtitleVal += "Task Finish Date\n" + TaskFinishDate + "</br>";
+
+            //            HeroCard plCard = new HeroCard()
+            //            {
+            //                Title = TaskName,
+            //                Subtitle = SubtitleVal,
+
+            //            };
+            //            reply.Attachments.Add(plCard.ToAttachment());
+            //        }
+            //    }
+            //    return reply;
+            //}
+
+
+            //private IMessageActivity GetResourceLoggedInIssues(IDialogContext dialogContext, ListItemCollection itemsIssue, int SIndex, out int Counter)
+            //{
+            //    IMessageActivity reply = null;
+            //    reply = dialogContext.MakeMessage();
+            //    Counter = 0;
+
+
+
+            //    int inDexToVal = SIndex + 10;
+            //    if (inDexToVal >= itemsIssue.Count)
+            //        inDexToVal = itemsIssue.Count;
+
+
+            //    if (itemsIssue.Count > 0)
+            //    {
+            //        int count = 0;
+            //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+            //        {
+            //            ListItem item = itemsIssue[startIndex];
+
+            //            if (item["AssignedTo"] != null)
+            //            {
+            //                count++;
+            //                FieldUserValue fuv = (FieldUserValue)item["AssignedTo"];
+            //                if (fuv.Email == _userName)
+            //                {
+            //                    string SubtitleVal = "";
+            //                    string IssueName = string.Empty;
+            //                    string IssueStatus = string.Empty;
+            //                    string IssuePriority = string.Empty;
+
+            //                    if (item["Title"] != null)
+            //                        IssueName = (string)item["Title"];
+            //                    if (item["Status"] != null)
+            //                        IssueStatus = (string)item["Status"];
+            //                    if (item["Priority"] != null)
+            //                        IssuePriority = (string)item["Priority"];
+            //                    SubtitleVal += "Status\n" + IssueStatus + "</br>";
+            //                    SubtitleVal += "Priority\n" + IssuePriority + "</br>";
+            //                    HeroCard plCard = new HeroCard()
+            //                    {
+            //                        Title = IssueName,
+            //                        Subtitle = SubtitleVal,
+            //                    };
+            //                    reply.Attachments.Add(plCard.ToAttachment());
+            //                }
+            //            }
+            //        }
+            //        Counter = count;
+            //    }
+            //    return reply;
+            //}
+
+
+
+            //private IMessageActivity GetResourceLoggedInRisks(IDialogContext dialogContext, ListItemCollection itemsRisk, int SIndex, out int Counter)
+            //{
+            //    IMessageActivity reply = null;
+            //    reply = dialogContext.MakeMessage();
+            //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            //    Counter = 0;
+            //    string RiskName = string.Empty;
+            //    string ResourceName = string.Empty;
+            //    string riskStatus = string.Empty;
+            //    string riskImpact = string.Empty;
+            //    string riskProbability = string.Empty;
+            //    string riskCostExposure = string.Empty;
+            //    if (itemsRisk.Count > 0)
+            //    {
+            //        int count = 0;
+
+            //        int inDexToVal = SIndex + 10;
+            //        if (inDexToVal >= itemsRisk.Count)
+            //            inDexToVal = itemsRisk.Count;
+            //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+            //        {
+            //            var SubtitleVal = "";
+            //            ListItem item = itemsRisk[startIndex];
+
+
+            //            if (item["AssignedTo"] != null)
+            //            {
+            //                count++;
+            //                FieldUserValue fuv = (FieldUserValue)item["AssignedTo"];
+            //                if (fuv.Email == _userName)
+            //                {
+            //                    if (item["Title"] != null)
+            //                        RiskName = (string)item["Title"];
+            //                    SubtitleVal += "Risk Title\n" + RiskName + "</br>";
+
+            //                    SubtitleVal += "Assigned To Resource\n" + fuv.LookupValue + "</br>";
+            //                    if (item["Status"] != null)
+            //                        riskStatus = (string)item["Status"];
+            //                    SubtitleVal += "Risk Status\n" + riskStatus + "</br>";
+
+            //                    if (item["Impact"] != null)
+            //                        riskImpact = item["Impact"].ToString();
+            //                    SubtitleVal += "Risk Impact\n" + riskImpact + "</br>";
+
+            //                    if (item["Probability"] != null)
+            //                        riskProbability = item["Probability"].ToString();
+            //                    SubtitleVal += "Risk Probability\n" + riskProbability + "</br>";
+
+            //                    if (item["Exposure"] != null)
+            //                        riskCostExposure = item["Exposure"].ToString();
+            //                    SubtitleVal += "Risk CostExposure\n" + riskCostExposure + "</br>";
+
+            //                    HeroCard plCard = new HeroCard()
+            //                    {
+            //                        Title = RiskName,
+            //                        Subtitle = SubtitleVal,
+            //                    };
+            //                    reply.Attachments.Add(plCard.ToAttachment());
+
+            //                }
+
+            //            }
+            //            Counter = count;
+
+
+            //        }
+
+            //    }
+
+            //    return reply;
+            //}
+
+
+
+            //public IMessageActivity GetResourceAssignments(IDialogContext dialogContext, int SIndex, string ResourceName, out int Counter)
+            //{
+            //    IMessageActivity reply = null;
+            //    reply = dialogContext.MakeMessage();
+            //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            //    int counttotalAss = 0;
+            //    Counter = 0;
+            //    using (ProjectContext context = new ProjectContext(_siteUri))
+            //    {
+
+
+            //        SecureString passWord = new SecureString();
+            //        foreach (char c in _userPassword.ToCharArray()) passWord.AppendChar(c);
+            //        context.Credentials = new SharePointOnlineCredentials(_userName, passWord);
+
+
+            //        context.Load(context.Projects);
+            //        context.ExecuteQuery();
+            //        ProjectCollection projcoll = context.Projects;
+
+
+            //        context.Load(context.EnterpriseResources);
+            //        var resources = context.EnterpriseResources;
+
+            //        context.ExecuteQuery();
+
+
+            //        ResourceName = ResourceName.Replace(" ", String.Empty);
+
+            //        string fullEmail = string.Concat(ResourceName, ConfigurationManager.AppSettings["DomainEmail"]);
+
+            //        var user = context.Web.EnsureUser(ResourceName);
+            //        context.Load(user);
+            //        context.ExecuteQuery();
+
+            //        if (user != null)
+            //        {
+            //            var resource = resources.FirstOrDefault(i => i.Email == user.Email);
+            //            if (resource != null)
+            //            {
+
+            //                foreach (PublishedProject proj in projcoll)
+            //                {
+            //                    context.Load(proj.Assignments, da => da.Where(a => a.Resource.Email == user.Email));
+
+            //                    context.ExecuteQuery();
+            //                    PublishedAssignmentCollection itemsAssignments = proj.Assignments;
+
+            //                    if (proj.Assignments != null)
+            //                    {
+            //                        int inDexToVal = SIndex + 10;
+            //                        if (inDexToVal >= itemsAssignments.Count)
+            //                            inDexToVal = itemsAssignments.Count;
+
+            //                        PublishedAssignmentCollection proAssignment = proj.Assignments;
+            //                        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+            //                        {
+            //                            PublishedAssignment ass = itemsAssignments[startIndex];
+            //                            string SubtitleVal = "";
+            //                            context.Load(ass.Task);
+            //                            context.ExecuteQuery();
+            //                            var tsk = ass.Task;
+            //                            SubtitleVal += "Assignment Start Date :\n" + ass.Start + "</br>";
+            //                            SubtitleVal += "Task Name :\n" + tsk.Name + "</br>";
+            //                            counttotalAss++;
+
+
+            //                            HeroCard plCard = new HeroCard()
+            //                            {
+            //                                Title = proj.Name,
+            //                                Subtitle = SubtitleVal,
+            //                            };
+            //                            reply.Attachments.Add(plCard.ToAttachment());
+            //                        }
+            //                        Counter = counttotalAss;
+
+            //                    }
+            //                }
+
+
+            //            }
+
+            //        }
+
+
+
+
+            //        return reply;
+            //    }
+
+            //}
+
+            //public IMessageActivity GetResourceLoggedInAssignments(IDialogContext dialogContext, ProjectContext context, PublishedAssignmentCollection itemsAssignments, int SIndex, string ResourceName, out int Counter)
+            //{
+            //    IMessageActivity reply = null;
+            //    reply = dialogContext.MakeMessage();
+            //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            //    Counter = 0;
+            //    int count = 0;
+            //    if (itemsAssignments.Count > 0)
+            //    {
+            //        int inDexToVal = SIndex + 10;
+            //        if (inDexToVal >= itemsAssignments.Count)
+            //            inDexToVal = itemsAssignments.Count;
+
+            //        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+            //        {
+            //            PublishedAssignment ass = itemsAssignments[startIndex];
+
+            //            context.Load(ass.Task);
+            //            context.Load(ass.Resource);
+            //            context.ExecuteQuery();
+
+            //            if (ass.Resource.Email == ResourceName)
+            //            {
+            //                count++;
+            //                string SubtitleVal = "";
+            //                string TaskName = ass.Task.Name;
+            //                SubtitleVal += "Resource Name :\n" + ass.Resource.Name + "</br>";
+            //                SubtitleVal += "Start Date\n" + ass.Start + "</br>";
+            //                SubtitleVal += "Finish Date\n" + ass.Finish + "</br>";
+
+
+            //                HeroCard plCard = new HeroCard()
+            //                {
+            //                    Title = TaskName,
+            //                    Subtitle = SubtitleVal,
+            //                };
+            //                reply.Attachments.Add(plCard.ToAttachment());
+            //            }
+            //        }
+            //        Counter = count;
+            //    }
+            //    return reply;
+
+            //}
+            //public bool UserHavePermissionOnaProjects(string siteUrl, string subSiteTitle, ProjectContext context)
+            //{
+
+            //    var web = context.Web;
+            //    bool exist = false;
+            //    context.Load(web, w => w.Webs);
+            //    context.ExecuteQuery();
+            //    foreach (Web subWeb in web.Webs)
+            //    {
+            //        if (subWeb.Title.ToLower() == subSiteTitle.ToLower())
+            //        {
+            //            var user = subWeb.EnsureUser(_userName);
+            //            context.Load(user);
+            //            context.ExecuteQuery();
+
+            //            if (null != user)
+            //            {
+            //                ClientResult<BasePermissions> permissions = subWeb.GetUserEffectivePermissions(user.LoginName);
+            //                context.ExecuteQuery();
+
+
+            //                if (permissions.Value.Has(PermissionKind.ViewListItems))
+            //                {
+            //                    exist = true;
+            //                    break;
+            //                }
+            //                else
+            //                    exist = false;
+
+
+            //            }
+            //            else
+            //                exist = false;
+
+
+
+
+            //        }
+            //    }
+
+            //    return exist;
+            //}
+
+
+
+            //private static PublishedProject GetProjectByName(string name, ProjectContext context)
+            //{
+            //    if (name.Contains(" - "))
+            //        name = name.Replace(" - ", "-");
+            //    IEnumerable<PublishedProject> projs = context.LoadQuery(context.Projects.Where(p => p.Name == name));
+            //    context.ExecuteQuery();
+            //    if (!projs.Any())       // no project found
+            //    {
+            //        return null;
+            //    }
+            //    return projs.FirstOrDefault();
+
+            //}
+
+            //private static Web GetProjectWEB(string siteurl, ProjectContext context)
+            //{
+            //    IEnumerable<Web> webs = context.LoadQuery(context.Web.Webs.Where(p => p.Url == siteurl));
+            //    context.ExecuteQuery();
+            //    if (!webs.Any())       // no project found
+            //    {
+            //        return null;
+            //    }
+            //    return webs.FirstOrDefault();
+
+            //}
+            //public IMessageActivity GetLoggedInPMProjects(IDialogContext dialogContext, ProjectContext context, ProjectCollection projectDetails, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
+            //{
+            //    IMessageActivity reply = null;
+            //    reply = dialogContext.MakeMessage();
+            //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+
+            //    int inDexToVal = SIndex + 10;
+            //    Counter = 0;
+            //    //Counter = projectDetails.Count;
+            //    //if (inDexToVal >= projectDetails.Count)
+            //    //    inDexToVal = projectDetails.Count;
+
+            //    foreach (PublishedProject pro in projectDetails)
+            //    {
+            //        //  PublishedProject pro = context.Projects[startIndex];
+            //        context.Load(pro.Owner);
+            //        context.Load(pro, p => p.ProjectSiteUrl);
+            //        context.ExecuteQuery();
+
+
+            //        if (pro.Owner.Email == _userName)
+            //        {
+            //            Counter++;
+            //            string ProjectName = pro.Name;
+            //            string ProjectWorkspaceInternalUrl = pro.ProjectSiteUrl;
+            //            string ProjectPercentCompleted = pro.PercentComplete.ToString();
+            //            string ProjectFinishDate = pro.FinishDate.ToString();
+            //            string ProjectStartDate = pro.StartDate.ToString();
+            //            TimeSpan duration = pro.FinishDate - pro.StartDate;
+            //            string ProjectDuration = duration.Days.ToString();
+            //            string ProjectOwnerName = pro.Owner.Title;
+            //            string SubtitleVal = "";
+            //            if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
+            //            {
+            //                SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
+            //                SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
+            //                SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+            //                SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+            //                SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+            //            }
+
+            //            else if (ProjectDates == true)
+            //            {
+            //                SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
+            //                SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+            //            }
+            //            else if (PDuration == true)
+            //            {
+            //                SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+            //            }
+            //            else if (projectManager == true)
+            //            {
+            //                SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+            //            }
+            //            string ImageURL = "http://02-code.com/images/logo.jpg";
+            //            List<CardImage> cardImages = new List<CardImage>();
+            //            List<CardAction> cardactions = new List<CardAction>();
+            //            cardImages.Add(new CardImage(url: ImageURL));
+            //            CardAction btnWebsite = new CardAction()
+            //            {
+            //                Type = ActionTypes.OpenUrl,
+            //                Title = "Open",
+            //                Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
+            //            };
+            //            CardAction btnTasks = new CardAction()
+            //            {
+            //                Type = ActionTypes.PostBack,
+            //                Title = "Tasks",
+            //                Value = "show a list of " + ProjectName + " tasks",
+            //                //  DisplayText = "show a list of " + ProjectName + " tasks",
+            //                Text = "show a list of " + ProjectName + " tasks",
+            //            };
+            //            cardactions.Add(btnTasks);
+
+            //            CardAction btnIssues = new CardAction()
+            //            {
+            //                Type = ActionTypes.PostBack,
+            //                Title = "Issues",
+            //                Value = "show a list of " + ProjectName + " issues",
+            //                Text = "show a list of " + ProjectName + " issues"
+            //            };
+            //            cardactions.Add(btnIssues);
+
+            //            CardAction btnRisks = new CardAction()
+            //            {
+            //                Type = ActionTypes.PostBack,
+            //                Title = "Risks",
+            //                Value = "Show risks and the assigned resources of " + ProjectName,
+            //                Text = "Show risks and the assigned resources of " + ProjectName,
+
+            //            };
+            //            cardactions.Add(btnRisks);
+
+            //            CardAction btnDeliverables = new CardAction()
+            //            {
+            //                Type = ActionTypes.PostBack,
+            //                Title = "Deliverables",
+            //                Value = "Show " + ProjectName + " deliverables",
+            //                Text = "Show " + ProjectName + " deliverables",
+            //            };
+            //            cardactions.Add(btnDeliverables);
+
+            //            CardAction btnAssignments = new CardAction()
+            //            {
+            //                Type = ActionTypes.PostBack,
+            //                Title = "Assignments",
+            //                Value = "get " + ProjectName + " assignments",
+            //                Text = "get " + ProjectName + " assignments",
+
+            //            };
+            //            cardactions.Add(btnAssignments);
+
+            //            CardAction btnMilestones = new CardAction()
+            //            {
+            //                Type = ActionTypes.PostBack,
+            //                Title = "Milestones",
+            //                Value = "get " + ProjectName + " milestones",
+            //                Text = "get " + ProjectName + " milestones",
+
+            //            };
+            //            cardactions.Add(btnMilestones);
+
+            //            HeroCard plCard = new HeroCard()
+            //            {
+            //                Title = ProjectName,
+            //                Subtitle = SubtitleVal,
+            //                Images = cardImages,
+            //                Buttons = cardactions,
+            //                Tap = btnTasks,
+            //            };
+            //            reply.Attachments.Add(plCard.ToAttachment());
+            //            if (Counter == 10)
+            //                break;
+            //        }
+            //    }
+
+            //    return reply;
+            //}
+            //public IMessageActivity GetResourceLoggedInProjects(IDialogContext dialogContext, ProjectContext context, ProjectCollection projectDetails, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
+            //{
+            //    IMessageActivity reply = null;
+            //    reply = dialogContext.MakeMessage();
+            //    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+
+            //    int inDexToVal = SIndex + 10;
+            //    Counter = projectDetails.Count;
+            //    if (inDexToVal >= projectDetails.Count)
+            //        inDexToVal = projectDetails.Count;
+
+            //    for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+            //    {
+            //        PublishedProject pro = context.Projects[startIndex];
+            //        context.Load(pro.Owner);
+            //        //  context.Load(pro, p => p.ProjectSiteUrl);
+            //        context.ExecuteQuery();
+
+            //        string ProjectName = pro.Name;
+            //        //     string ProjectWorkspaceInternalUrl = pro.ProjectSiteUrl;
+            //        string ProjectPercentCompleted = pro.PercentComplete.ToString();
+            //        string ProjectFinishDate = pro.FinishDate.ToString();
+            //        string ProjectStartDate = pro.StartDate.ToString();
+            //        TimeSpan duration = pro.FinishDate - pro.StartDate;
+            //        string ProjectDuration = duration.Days.ToString();
+            //        // string ProjectOwnerName = pro.Owner.Title;
+            //        string SubtitleVal = "";
+            //        if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
+            //        {
+            //            SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
+            //            SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
+            //            SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+            //            SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+            //            //   SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+            //        }
+            //        else if (showCompletion == true)
+            //            SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
+            //        else if (ProjectDates == true)
+            //        {
+            //            SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
+            //            SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+            //        }
+            //        else if (PDuration == true)
+            //        {
+            //            SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+            //        }
+            //        //else if (projectManager == true)
+            //        //{
+            //        //    SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+            //        //}
+            //        string ImageURL = "http://02-code.com/images/logo.jpg";
+            //        List<CardImage> cardImages = new List<CardImage>();
+            //        List<CardAction> cardactions = new List<CardAction>();
+            //        cardImages.Add(new CardImage(url: ImageURL));
+            //        //CardAction btnWebsite = new CardAction()
+            //        //{
+            //        //    Type = ActionTypes.OpenUrl,
+            //        //    Title = "Open",
+            //        //    Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
+            //        //};
+            //        CardAction btnTasks = new CardAction()
+            //        {
+            //            Type = ActionTypes.PostBack,
+            //            Title = "Tasks",
+            //            Value = "show a list of " + ProjectName + " tasks",
+            //        };
+            //        cardactions.Add(btnTasks);
+
+            //        CardAction btnIssues = new CardAction()
+            //        {
+            //            Type = ActionTypes.PostBack,
+            //            Title = "Issues",
+            //            Value = "show a list of " + ProjectName + " issues",
+            //        };
+            //        cardactions.Add(btnIssues);
+
+            //        CardAction btnRisks = new CardAction()
+            //        {
+            //            Type = ActionTypes.PostBack,
+            //            Title = "Risks",
+            //            Value = "Show risks and the assigned resources of " + ProjectName,
+            //        };
+            //        cardactions.Add(btnRisks);
+
+            //        //CardAction btnDeliverables = new CardAction()
+            //        //{
+            //        //    Type = ActionTypes.PostBack,
+            //        //    Title = "Deliverables",
+            //        //    Value = "Show " + ProjectName + " deliverables",
+            //        //};
+            //        //cardactions.Add(btnDeliverables);
+
+            //        CardAction btnDAssignments = new CardAction()
+            //        {
+            //            Type = ActionTypes.PostBack,
+            //            Title = "Assignments",
+            //            Value = "get " + ProjectName + " assignments",
+            //        };
+            //        cardactions.Add(btnDAssignments);
+
+            //        HeroCard plCard = new HeroCard()
+            //        {
+            //            Title = ProjectName,
+            //            Subtitle = SubtitleVal,
+            //            Images = cardImages,
+            //            Buttons = cardactions,
+            //            Tap = btnTasks,
+            //        };
+            //        reply.Attachments.Add(plCard.ToAttachment());
+            //    }
+
+            //    return reply;
+            //}
+            public IMessageActivity TotalCountGeneralMessage(IDialogContext dialogContext, int SIndex, int Counter, string ListName)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -2375,7 +2411,12 @@ namespace Common
                     reply.Attachments.Add(plCardNoData.ToAttachment());
                 }
             }
-
+            else
+            {
+                HeroCard plCardNoData = new HeroCard()
+                { Title = "No data returned \n\n" };
+                reply.Attachments.Add(plCardNoData.ToAttachment());
+            }
             return reply;
         }
 
@@ -2565,22 +2606,31 @@ namespace Common
                 };
                 cardactions.Add(btnClosedProjects);
 
-                CardAction btnCompltedPcurrentYear = new CardAction()
+                CardAction btnPendingProjects = new CardAction()
                 {
                     Type = ActionTypes.PostBack,
-                    Title = "Completed Projects This Year",
-                    Value = "get all projects closed this year",
-                    Text = "get all projects closed this year",
+                    Title = "Pending Projects",
+                    Value = "get all projects where compeleted percentage is 90%",
+                    Text = "get all projects where compeleted percentage is 90%",
                 };
-                cardactions.Add(btnCompltedPcurrentYear);
-                CardAction btnStartedPcurrentYear = new CardAction()
-                {
-                    Type = ActionTypes.PostBack,
-                    Title = "Started Projects This Year",
-                    Value = "get all projects started this year",
-                    Text = "get all projects started this year",
-                };
-                cardactions.Add(btnStartedPcurrentYear);
+                cardactions.Add(btnPendingProjects);
+
+                //CardAction btnCompltedPcurrentYear = new CardAction()
+                //{
+                //    Type = ActionTypes.PostBack,
+                //    Title = "Completed Projects This Year",
+                //    Value = "get all projects closed this year",
+                //    Text = "get all projects closed this year",
+                //};
+                //cardactions.Add(btnCompltedPcurrentYear);
+                //CardAction btnStartedPcurrentYear = new CardAction()
+                //{
+                //    Type = ActionTypes.PostBack,
+                //    Title = "Started Projects This Year",
+                //    Value = "get all projects started this year",
+                //    Text = "get all projects started this year",
+                //};
+                //cardactions.Add(btnStartedPcurrentYear);
                 HeroCard plCard = new HeroCard()
                 {
                     Title = "Suggestions",
