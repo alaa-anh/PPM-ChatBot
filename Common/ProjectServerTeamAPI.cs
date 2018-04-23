@@ -999,22 +999,22 @@ namespace Common
                     if (ProjectSEdateFlag == "START")
                     {
                         if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'"+ formatedstartdate + "'";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'"+ formatedstartdate + "'&$orderby=ProjectStartDate";
 
                         else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "'";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "'&$orderby=ProjectStartDate";
 
                         else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdate + "' and ProjectStartDate ge DateTime'" + formatedendate + "'" ;
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdate + "' and ProjectStartDate ge DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
                     }
                     else if (ProjectSEdateFlag == "Finish")
                     {
                         if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
                         else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
                         else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedstartdate + "' and ProjectFinishDate ge DateTime'" + formatedendate + "'";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedstartdate + "' and ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
                     }
 
                     endpointUri = new Uri(webUri + AdminAPI);
@@ -2183,7 +2183,7 @@ namespace Common
                         else if (SIndex > 0)
                         {
                             int pagenumber = SIndex / 10 + 1;
-                            subTitle = "You are viwing the page number " + pagenumber + " , each page view 10 Deliverables";
+                            subTitle = "You are viwing the page number " + pagenumber + " , each page view 10 Projects";
                         }
                         HeroCard plCardCounter = new HeroCard()
                         {
@@ -2313,7 +2313,7 @@ namespace Common
                 for (int i = 0; i < pagenumber; i++)
                 {
                     string CurrentNumber = Convert.ToString(i);
-                    if (projectName == "" && query == "")
+                    if (ListName == Enums.ListName.Projects.ToString())
                     {
                         if (i == 0)
                         {
