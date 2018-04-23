@@ -420,14 +420,14 @@ namespace PM.BotApplication.Dialogs
                     {
                         await context.PostAsync(messageActivity);
                     }
-                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
+                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, "FilterProjects"));
 
                     if (Counter > 10)
                     {
                         if (Counter > 100)
-                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", luisResult.Query));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, "FilterProjects", "", luisResult.Query));
                         else
-                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", luisResult.Query));
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, "FilterProjects", "", luisResult.Query));
                         //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
                     }
                 }

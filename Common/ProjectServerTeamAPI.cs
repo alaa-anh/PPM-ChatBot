@@ -2171,7 +2171,7 @@ namespace Common
                     reply.Attachments.Add(plCardNoData.ToAttachment());
                 }
             }
-            else if (ListName == "FilterByDate")
+            else if (ListName == "FilterProjects")
             {
                 if (Counter > 0)
                 {
@@ -2313,7 +2313,7 @@ namespace Common
                 for (int i = 0; i < pagenumber; i++)
                 {
                     string CurrentNumber = Convert.ToString(i);
-                    if (projectName == "")
+                    if (projectName == "" && query == "")
                     {
                         if (i == 0)
                         {
@@ -2372,7 +2372,7 @@ namespace Common
                             valuebutton = "get " + projectName + " assignments at index " + i * 10;
 
                     }
-                    else if (ListName == "FilterByDate" && query != "")
+                    else if (ListName == "FilterProjects" && query != "")
                     {
                         if (i == 0)
                         {
