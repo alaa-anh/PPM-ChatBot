@@ -245,11 +245,6 @@ namespace Common
                     reply.Attachments.Add(plCard.ToAttachment());
                 }
 
-
-
-
-
-
             }
 
             return reply;
@@ -950,12 +945,24 @@ namespace Common
             return reply;
         }
 
-        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal, out int Counter)
+        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal , string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
+
+            DateTime startdate = new DateTime();
+            DateTime endate = new DateTime();
+            if (!string.IsNullOrEmpty(pStartDate))
+                startdate = DateTime.Parse(pStartDate);
+
+            if (!string.IsNullOrEmpty(PEndDate))
+                endate = DateTime.Parse(PEndDate);
+
+            string formatedstartdate = startdate.ToString("yyyy-MM-dd");
+            string formatedendate = endate.ToString("yyyy-MM-dd");
+
 
             SecureString passWord = new SecureString();
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
@@ -980,7 +987,7 @@ namespace Common
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, out ProjectCounter);
+                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, FilterType, formatedstartdate, formatedendate, ProjectSEdateFlag, out ProjectCounter);
 
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
@@ -989,6 +996,26 @@ namespace Common
                         AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted eq "+ completionpercentVal;
                     if (completionpercentVal == 90)
                         AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted lt 100";
+                    if (ProjectSEdateFlag == "START")
+                    {
+                        if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'"+ formatedstartdate + "'";
+
+                        else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "'";
+
+                        else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdate + "' and ProjectStartDate ge DateTime'" + formatedendate + "'" ;
+                    }
+                    else if (ProjectSEdateFlag == "Finish")
+                    {
+                        if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'";
+                        else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'";
+                        else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedstartdate + "' and ProjectFinishDate ge DateTime'" + formatedendate + "'";
+                    }
 
                     endpointUri = new Uri(webUri + AdminAPI);
                     var responce = client.DownloadString(endpointUri);
@@ -1001,178 +1028,8 @@ namespace Common
             Counter = ProjectCounter;
             return reply;
         }
+
         
-        public IMessageActivity FilterProjectsByDate(IDialogContext dialogContext, string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, out int Counter)
-        {
-            IMessageActivity reply = null;
-            reply = dialogContext.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-            Counter = 0;
-            IEnumerable<PublishedProject> retrivedProjects = null; ;
-            //using (ProjectContext context = new ProjectContext(_siteUri))
-            //{
-            //    SecureString passWord = new SecureString();
-            //    foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
-            //    //      SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-            //    context.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
-            //    DateTime startdate = new DateTime();
-            //    DateTime endate = new DateTime();
-
-            //    if (!string.IsNullOrEmpty(pStartDate))
-            //        startdate = DateTime.Parse(pStartDate);
-
-            //    if (!string.IsNullOrEmpty(PEndDate))
-            //        endate = DateTime.Parse(PEndDate);
-
-
-            //    if (ProjectSEdateFlag == "START")
-            //    {
-
-            //        if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-            //        {
-            //            var pubProjects = context.Projects
-            //                      .Where(p => (p.StartDate <= startdate))
-            //                      .Select(p => p);
-            //            retrivedProjects = context.LoadQuery(pubProjects);
-
-
-            //        }
-            //        else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
-            //        {
-            //            var pubProjects = context.Projects
-            //                .Where(p => p.IsEnterpriseProject == true
-            //                && p.StartDate >= startdate);
-            //            retrivedProjects = context.LoadQuery(pubProjects);
-
-            //        }
-
-            //        else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
-            //        {
-            //            var pubProjects = context.Projects
-            //                .Where(p => p.IsEnterpriseProject == true
-            //                && p.StartDate >= startdate && p.StartDate <= endate);
-            //            retrivedProjects = context.LoadQuery(pubProjects);
-
-            //        }
-            //    }
-            //    else
-            //    {
-
-            //        if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
-            //        {
-            //            var pubProjects = context.Projects
-            //                .Where(p => p.IsEnterpriseProject == true
-            //                && p.FinishDate <= endate);
-            //            retrivedProjects = context.LoadQuery(pubProjects);
-
-            //        }
-
-            //        else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
-            //        {
-            //            var pubProjects = context.Projects
-            //                .Where(p => p.IsEnterpriseProject == true
-            //                && p.StartDate >= endate);
-            //            retrivedProjects = context.LoadQuery(pubProjects);
-
-            //        }
-            //        else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
-            //        {
-            //            var pubProjects = context.Projects
-            //                .Where(p => p.IsEnterpriseProject == true
-            //                && p.FinishDate >= startdate && p.FinishDate <= endate);
-            //            retrivedProjects = context.LoadQuery(pubProjects);
-
-            //        }
-            //    }
-
-            //    context.ExecuteQuery();
-            //    if (retrivedProjects.Count() > 0)
-            //    {
-            //        Counter = retrivedProjects.Count();
-            //        foreach (var item in retrivedProjects)
-            //        {
-            //            string SubtitleVal = "";
-
-
-            //            string ProjectName = item.Name;
-
-            //            SubtitleVal += "Start Date\n" + item.StartDate + "</br>";
-            //            SubtitleVal += "Finish Date\n" + item.FinishDate + "</br>";
-            //            SubtitleVal += "Actual Cost\n" + item.DefaultFixedCostAccrual.ToString() + "</br>";
-
-            //            string ImageURL = "http://02-code.com/images/logo.jpg";
-            //            List<CardImage> cardImages = new List<CardImage>();
-            //            List<CardAction> cardactions = new List<CardAction>();
-            //            cardImages.Add(new CardImage(url: ImageURL));
-
-            //            CardAction btnTasks = new CardAction()
-            //            {
-            //                Type = ActionTypes.PostBack,
-            //                Title = "Tasks",
-            //                Value = "show a list of " + ProjectName + " tasks",
-            //                Text = "show a list of " + ProjectName + " tasks",
-            //            };
-            //            cardactions.Add(btnTasks);
-
-            //            CardAction btnIssues = new CardAction()
-            //            {
-            //                Type = ActionTypes.PostBack,
-            //                Title = "Issues",
-            //                Value = "show a list of " + ProjectName + " issues",
-            //                Text = "show a list of " + ProjectName + " issues"
-            //            };
-            //            cardactions.Add(btnIssues);
-
-            //            CardAction btnRisks = new CardAction()
-            //            {
-            //                Type = ActionTypes.PostBack,
-            //                Title = "Risks",
-            //                Value = "Show risks and the assigned resources of " + ProjectName,
-            //                Text = "Show risks and the assigned resources of " + ProjectName,
-
-            //            };
-            //            cardactions.Add(btnRisks);
-
-            //            CardAction btnDeliverables = new CardAction()
-            //            {
-            //                Type = ActionTypes.PostBack,
-            //                Title = "Deliverables",
-            //                Value = "Show " + ProjectName + " deliverables",
-            //                Text = "Show " + ProjectName + " deliverables",
-            //            };
-            //            cardactions.Add(btnDeliverables);
-
-            //            CardAction btnDAssignments = new CardAction()
-            //            {
-            //                Type = ActionTypes.PostBack,
-            //                Title = "Assignments",
-            //                Value = "get " + ProjectName + " assignments",
-            //                Text = "get " + ProjectName + " assignments",
-
-            //            };
-            //            cardactions.Add(btnDAssignments);
-
-            //            HeroCard plCard = new HeroCard()
-            //            {
-            //                Title = ProjectName,
-            //                Subtitle = SubtitleVal,
-            //                Images = cardImages,
-            //                Buttons = cardactions,
-            //                Tap = btnTasks,
-            //            };
-            //            reply.Attachments.Add(plCard.ToAttachment());
-
-
-            //        }
-            //    }
-            //}
-
-
-
-
-
-            return reply;
-        }
 
         public IMessageActivity GetProjectInfo(IDialogContext dialogContext, string pName, bool optionalDate = false, bool optionalDuration = false, bool optionalCompletion = false, bool optionalPM = false)
         {
@@ -1287,7 +1144,7 @@ namespace Common
 
 
 
-        public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, List<JToken> jArrays, int SIndex, int completionpercentVal, out int Counter)
+        public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, List<JToken> jArrays, int SIndex, int completionpercentVal, string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -1303,7 +1160,29 @@ namespace Common
                 else if (completionpercentVal == 90)
                     jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] < 100);
 
-                if(jToken.Any())
+                if (ProjectSEdateFlag == "START")
+                {
+                    if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
+                        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
+
+                    else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
+                        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate));
+
+                    else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
+                        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(PEndDate));
+                }
+                else if (ProjectSEdateFlag == "Finish")
+                {
+                    if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
+                        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
+
+                    else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
+                        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(PEndDate));
+                    else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
+                        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(PEndDate));
+                }
+
+                if (jToken.Any())
                 {
                     if(jToken.Count() > 0)
                     {

@@ -304,82 +304,7 @@ namespace PM.BotApplication.Dialogs
             }
         }
 
-        [LuisIntent("FilterProjectsByDate")]
-        public async Task FilterProjectsByDate(IDialogContext context, LuisResult luisResult)
-        {
-            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
-            {
-                string FilterType = string.Empty;
-                string ProjectSEdateFlag = "START";
-                string ProjectED = string.Empty;
-                string ProjectSDate = string.Empty;
-                string ProjectEDate = string.Empty;
-                var filterDate = (object)null;
-                EntityRecommendation dateTimeEntity, dateRangeEntity, ProjectS, ProjectE;
-                EntityRecommendation ItemIndex;
-                int itemStartIndex = 0;
-                int Counter;
-
-                if (luisResult.TryFindEntity("builtin.datetimeV2.daterange", out dateRangeEntity))
-                {
-                    filterDate = dateRangeEntity.Resolution.Values.Select(x => x).OfType<List<object>>().SelectMany(i => i).FirstOrDefault();
-                    if (Common.TokenHelper.Datevalues(filterDate, "Mod") != "")
-                    {
-                        FilterType = Common.TokenHelper.Datevalues(filterDate, "Mod");
-                        ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "timex");
-                    }
-                    else
-                    {
-                        FilterType = "Between";
-                        ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "start");
-                    }
-                    ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "end");
-                }
-
-                if (luisResult.TryFindEntity("Project.Start", out ProjectS))
-                {
-                    ProjectSEdateFlag = "START";
-                }
-                else if (luisResult.TryFindEntity("Project.Finish", out ProjectE))
-                {
-                    ProjectSEdateFlag = "Finish";
-                }
-
-
-                if (filterDate != null)
-                {
-                    IMessageActivity messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterProjectsByDate(context, FilterType, ProjectSDate, ProjectEDate, ProjectSEdateFlag, out Counter);
-
-
-                    if (messageActivity != null)
-                    {
-                        if (messageActivity.Attachments.Count > 0)
-                        {
-                            await context.PostAsync(messageActivity);
-                        }
-                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, "FilterByDate"));
-
-                        if (Counter > 10)
-                        {
-                            if (Counter > 100)
-                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, "FilterByDate", "", luisResult.Query));
-                            else
-                                await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, "FilterByDate", "", luisResult.Query));
-                            //await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, "FilterByDate", ""));
-                        }
-
-
-
-                    }
-
-                }
-            }
-            else
-            {
-                PromptDialog.Confirm(context, ResumeAfterConfirmation, "You are note allwed to access the data , do you want to login?");
-
-            }
-        }
+      
 
         [LuisIntent("GetResourceAssignments")]
         public async Task GetResourceAssignments(IDialogContext context, LuisResult luisResult)
@@ -451,6 +376,41 @@ namespace PM.BotApplication.Dialogs
                 int Counter;
                 int completionpercentVal = 0;
 
+                string FilterType = string.Empty;
+                string ProjectSEdateFlag =string.Empty;
+                string ProjectED = string.Empty;
+                string ProjectSDate = string.Empty;
+                string ProjectEDate = string.Empty;
+                var filterDate = (object)null;
+                EntityRecommendation dateTimeEntity, dateRangeEntity, ProjectS, ProjectE;
+                EntityRecommendation ItemIndex;
+
+                if (luisResult.TryFindEntity("builtin.datetimeV2.daterange", out dateRangeEntity))
+                {
+                    ProjectSEdateFlag = "START";
+                    filterDate = dateRangeEntity.Resolution.Values.Select(x => x).OfType<List<object>>().SelectMany(i => i).FirstOrDefault();
+                    if (Common.TokenHelper.Datevalues(filterDate, "Mod") != "")
+                    {
+                        FilterType = Common.TokenHelper.Datevalues(filterDate, "Mod");
+                        ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "timex");
+                    }
+                    else
+                    {
+                        FilterType = "Between";
+                        ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "start");
+                    }
+                    ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "end");
+                }
+
+                if (luisResult.TryFindEntity("Project.Start", out ProjectS))
+                {
+                    ProjectSEdateFlag = "START";
+                }
+                else if (luisResult.TryFindEntity("Project.Finish", out ProjectE))
+                {
+                    ProjectSEdateFlag = "Finish";
+                }
+
                 if (luisResult.TryFindEntity("ItemIndex", out ProjectItemIndex))
                 {
                     itemStartIndex = int.Parse(ProjectItemIndex.Entity);
@@ -458,10 +418,7 @@ namespace PM.BotApplication.Dialogs
                 if (luisResult.TryFindEntity("completionVal", out completionVal))
                     completionpercentVal = int.Parse(completionVal.Entity.ToString());
 
-
-                 messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, out Counter);
-
-
+                messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, FilterType, ProjectSDate, ProjectEDate, ProjectSEdateFlag, out Counter);
 
                 if (messageActivity != null)
                 {
