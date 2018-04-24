@@ -125,6 +125,7 @@ namespace Common
             Counter = jArrays.Count;
             if (inDexToVal >= jArrays.Count)
                 inDexToVal = jArrays.Count;
+
             DateTime ProjectFinishDate = new DateTime();
             DateTime ProjectStartDate = new DateTime();
 
@@ -1001,8 +1002,8 @@ namespace Common
             if (!string.IsNullOrEmpty(PEndDate))
                 endate = DateTime.Parse(PEndDate);
 
-            string formatedstartdate = startdate.ToString("yyyy-MM-dd");
-            string formatedendate = endate.ToString("yyyy-MM-dd");
+            string formatedstartdate = startdate.ToString("yyyy-MM-ddT23:59:59Z");
+            string formatedendate = endate.ToString("yyyy-MM-ddT23:59:59Z");
 
 
             SecureString passWord = new SecureString();
