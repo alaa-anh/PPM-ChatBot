@@ -2308,6 +2308,8 @@ namespace Common
             double result = Math.Ceiling(p);
             int pagenumber = int.Parse(result.ToString());
 
+            if (query.Contains("at index"))
+                query = query.Substring(0, query.IndexOf("at index"));
             if (totalCount > 10)
             {
                 
