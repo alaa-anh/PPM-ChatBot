@@ -1032,7 +1032,7 @@ namespace Common
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, FilterType, formatedstartdatePM, formatedendatePM, ProjectSEdateFlag, out ProjectCounter);
+                  //  reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, FilterType, formatedstartdatePM, formatedendatePM, ProjectSEdateFlag, out ProjectCounter);
 
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
