@@ -1032,7 +1032,7 @@ namespace Common
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                  //  reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, FilterType, formatedstartdatePM, formatedendatePM, ProjectSEdateFlag, out ProjectCounter);
+                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, FilterType, formatedstartdatePM, formatedendatePM, ProjectSEdateFlag, out ProjectCounter);
 
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
@@ -1271,10 +1271,6 @@ namespace Common
                                 ProjectOwnerName = (string)item["ProjectOwnerName"];
 
                             SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                            SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
-                            SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
-                            SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
                             SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
                             SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
                             SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
