@@ -387,13 +387,16 @@ namespace PM.BotApplication.Dialogs
                     {
                         FilterType = Common.TokenHelper.Datevalues(filterDate, "Mod");
                         ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "timex");
+                        ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "timex");
+
                     }
                     else
                     {
                         FilterType = "Between";
                         ProjectSDate = Common.TokenHelper.Datevalues(filterDate, "start");
+                        ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "end");
+
                     }
-                    ProjectEDate = Common.TokenHelper.Datevalues(filterDate, "end");
                 }
 
                 if (luisResult.TryFindEntity("Project.Start", out ProjectS))
