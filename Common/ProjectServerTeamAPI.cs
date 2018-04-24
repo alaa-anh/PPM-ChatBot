@@ -1051,11 +1051,11 @@ namespace Common
                     else if (ProjectSEdateFlag == "Finish")
                     {
                         if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
                         else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
                         else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "' and ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
+                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedstartdate + "' and ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
                     }
 
                     endpointUri = new Uri(webUri + AdminAPI);
