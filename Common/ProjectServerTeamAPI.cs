@@ -1236,7 +1236,7 @@ namespace Common
 
                 if (jToken.Any())
                 {
-                    if(jToken.Count() > 0)
+                    if (jToken.Count() > 0)
                     {
                         int inDexToVal = SIndex + 10;
                         Counter = jToken.Count();
@@ -1247,7 +1247,7 @@ namespace Common
                         {
                             var item = jToken.ElementAt(startIndex);
                             string SubtitleVal = "";
-                           
+
 
                             if (item["ProjectName"] != null)
                                 ProjectName = (string)item["ProjectName"];
