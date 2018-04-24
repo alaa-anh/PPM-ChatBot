@@ -125,6 +125,14 @@ namespace Common
             Counter = jArrays.Count;
             if (inDexToVal >= jArrays.Count)
                 inDexToVal = jArrays.Count;
+            DateTime ProjectFinishDate = new DateTime();
+            DateTime ProjectStartDate = new DateTime();
+
+            string ProjectName = string.Empty;
+            string ProjectWorkspaceInternalUrl = string.Empty;
+            string ProjectPercentCompleted = string.Empty;
+            string ProjectDuration = string.Empty;
+            string ProjectOwnerName = string.Empty;
 
             if (jArrays.Count > 0)
             {
@@ -134,29 +142,62 @@ namespace Common
                     // {
                     var item = jArrays[startIndex];
                     string SubtitleVal = "";
-                    string ProjectName = (string)item["ProjectName"];
-                    string ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
-                    string ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
-                    DateTime ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
-                    DateTime ProjectStartDate = (DateTime)item["ProjectStartDate"];
-                    string ProjectDuration = (string)item["ProjectDuration"];
-                    string ProjectOwnerName = (string)item["ProjectOwnerName"];
+                    if (item["ProjectName"] != null)
+                        ProjectName = (string)item["ProjectName"];
+
+                    if (item["ProjectWorkspaceInternalUrl"] != null)
+                        ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
+
+                    if (item["ProjectPercentCompleted"] != null)
+                        ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
+
+                    if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                         ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
+
+                    if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                        ProjectStartDate = (DateTime)item["ProjectStartDate"];
+
+                    if (item["ProjectDuration"] != null)
+                        ProjectDuration = (string)item["ProjectDuration"];
+
+                    if (item["ProjectOwnerName"] != null)
+                        ProjectOwnerName = (string)item["ProjectOwnerName"];
+
+
+
 
 
 
                     if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
                     {
                         SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                        SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
-                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                        if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Finish Date :\n</br>";
+
+                        if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                            SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Start Date :\n</br>";
+
+
                         SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
                         SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
                     }
 
                     else if (ProjectDates == true)
                     {
-                        SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
-                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                        if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Finish Date :\n</br>";
+
+                        if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                            SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Start Date :\n</br>";
+
                     }
                     else if (PDuration == true)
                     {
@@ -1151,7 +1192,14 @@ namespace Common
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             Counter = 0;
             IEnumerable<JToken> jToken = null;
-           
+            DateTime ProjectFinishDate = new DateTime();
+            DateTime ProjectStartDate = new DateTime();
+
+            string ProjectName = string.Empty;
+            string ProjectWorkspaceInternalUrl = string.Empty;
+            string ProjectPercentCompleted = string.Empty;
+            string ProjectDuration = string.Empty;
+            string ProjectOwnerName = string.Empty;
 
             if (jArrays.Count > 0)
             {
@@ -1195,13 +1243,28 @@ namespace Common
                         {
                             var item = jToken.ElementAt(startIndex);
                             string SubtitleVal = "";
-                            string ProjectName = (string)item["ProjectName"];
-                            string ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
-                            string ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
-                            string ProjectFinishDate = (string)item["ProjectFinishDate"];
-                            string ProjectStartDate = (string)item["ProjectStartDate"];
-                            string ProjectDuration = (string)item["ProjectDuration"];
-                            string ProjectOwnerName = (string)item["ProjectOwnerName"];
+                           
+
+                            if (item["ProjectName"] != null)
+                                ProjectName = (string)item["ProjectName"];
+
+                            if (item["ProjectWorkspaceInternalUrl"] != null)
+                                ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
+
+                            if (item["ProjectPercentCompleted"] != null)
+                                ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
+
+                            if (item["ProjectFinishDate"] != null)
+                                ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
+
+                            if (item["ProjectStartDate"] != null)
+                                ProjectStartDate = (DateTime)item["ProjectStartDate"];
+
+                            if (item["ProjectDuration"] != null)
+                                ProjectDuration = (string)item["ProjectDuration"];
+
+                            if (item["ProjectOwnerName"] != null)
+                                ProjectOwnerName = (string)item["ProjectOwnerName"];
 
                             SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
                             SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
