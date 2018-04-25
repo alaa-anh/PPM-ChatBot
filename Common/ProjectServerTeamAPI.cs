@@ -1212,19 +1212,19 @@ namespace Common
                 else if (completionpercentVal == 90)
                     jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] < 100);
 
-                //if (ProjectSEdateFlag == "START")
-                //{
-                //    if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
+                if (ProjectSEdateFlag == "START")
+                {
+                    if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
+                        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
 
                 //    else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate));
 
                 //    else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(PEndDate));
-                //}
-                //else if (ProjectSEdateFlag == "Finish")
-                //{
+                }
+                else if (ProjectSEdateFlag == "Finish")
+                {
                 //    if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
 
@@ -1232,7 +1232,7 @@ namespace Common
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(PEndDate));
                 //    else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
-                //}
+                }
 
                 //if (jToken.Any())
                 //{
@@ -1364,7 +1364,7 @@ namespace Common
 
             HeroCard plCard2 = new HeroCard()
             {
-                Title = "hii",
+                Title = pStartDate,
 
             };
             reply.Attachments.Add(plCard2.ToAttachment());
