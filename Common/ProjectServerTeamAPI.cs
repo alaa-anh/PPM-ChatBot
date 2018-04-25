@@ -1224,47 +1224,46 @@ namespace Common
                         for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
                         {
                             var item = jToken.ElementAt(startIndex);
-                            //var item = jArrays[startIndex];
                             string SubtitleVal = "";
 
                             if (item["ProjectName"] != null)
                                 ProjectName = (string)item["ProjectName"];
 
-                        //        if (item["ProjectWorkspaceInternalUrl"] != null)
-                        //            ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
+                            if (item["ProjectWorkspaceInternalUrl"] != null)
+                                ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
 
-                        //        if (item["ProjectPercentCompleted"] != null)
-                        //            ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
+                            if (item["ProjectPercentCompleted"] != null)
+                                ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
 
-                        if (item["ProjectFinishDate"] != null)
-                            ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
+                            if (item["ProjectFinishDate"] != null)
+                                ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
 
-                        if (item["ProjectStartDate"] != null)
-                            ProjectStartDate = (DateTime)item["ProjectStartDate"];
+                            if (item["ProjectStartDate"] != null)
+                                ProjectStartDate = (DateTime)item["ProjectStartDate"];
 
-                        //if (item["ProjectDuration"] != null)
-                        //    ProjectDuration = (string)item["ProjectDuration"];
+                            if (item["ProjectDuration"] != null)
+                                ProjectDuration = (string)item["ProjectDuration"];
 
-                        if (item["ProjectOwnerName"] != null)
-                            ProjectOwnerName = (string)item["ProjectOwnerName"];
+                            if (item["ProjectOwnerName"] != null)
+                                ProjectOwnerName = (string)item["ProjectOwnerName"];
 
-                        //SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
-                        SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
-                        SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
-                        // SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
-                        SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+                            SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
+                            SubtitleVal += "Start Date :\n" + ProjectStartDate + "</br>";
+                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate + "</br>";
+                            SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+                            SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
 
-                        string ImageURL = "http://02-code.com/images/logo.jpg";
-                        List<CardImage> cardImages = new List<CardImage>();
-                        List<CardAction> cardactions = new List<CardAction>();
-                        cardImages.Add(new CardImage(url: ImageURL));
-                        CardAction btnWebsite = new CardAction()
+                            string ImageURL = "http://02-code.com/images/logo.jpg";
+                            List<CardImage> cardImages = new List<CardImage>();
+                            List<CardAction> cardactions = new List<CardAction>();
+                            cardImages.Add(new CardImage(url: ImageURL));
+                            CardAction btnWebsite = new CardAction()
                         {
                             Type = ActionTypes.OpenUrl,
                             Title = "Open",
                             Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
                         };
-                        CardAction btnTasks = new CardAction()
+                            CardAction btnTasks = new CardAction()
                         {
                             Type = ActionTypes.PostBack,
                             Title = "Tasks",
@@ -1272,18 +1271,16 @@ namespace Common
                             //  DisplayText = "show a list of " + ProjectName + " tasks",
                             Text = "show a list of " + ProjectName + " tasks",
                         };
-                        cardactions.Add(btnTasks);
-
-                        CardAction btnIssues = new CardAction()
+                            cardactions.Add(btnTasks);
+                            CardAction btnIssues = new CardAction()
                         {
                             Type = ActionTypes.PostBack,
                             Title = "Issues",
                             Value = "show a list of " + ProjectName + " issues",
                             Text = "show a list of " + ProjectName + " issues"
                         };
-                        cardactions.Add(btnIssues);
-
-                        CardAction btnRisks = new CardAction()
+                            cardactions.Add(btnIssues);
+                            CardAction btnRisks = new CardAction()
                         {
                             Type = ActionTypes.PostBack,
                             Title = "Risks",
@@ -1291,18 +1288,16 @@ namespace Common
                             Text = "Show risks and the assigned resources of " + ProjectName,
 
                         };
-                        cardactions.Add(btnRisks);
-
-                        CardAction btnDeliverables = new CardAction()
+                            cardactions.Add(btnRisks);
+                            CardAction btnDeliverables = new CardAction()
                         {
                             Type = ActionTypes.PostBack,
                             Title = "Deliverables",
                             Value = "Show " + ProjectName + " deliverables",
                             Text = "Show " + ProjectName + " deliverables",
                         };
-                        cardactions.Add(btnDeliverables);
-
-                        CardAction btnAssignments = new CardAction()
+                            cardactions.Add(btnDeliverables);
+                            CardAction btnAssignments = new CardAction()
                         {
                             Type = ActionTypes.PostBack,
                             Title = "Assignments",
@@ -1310,9 +1305,8 @@ namespace Common
                             Text = "get " + ProjectName + " assignments",
 
                         };
-                        cardactions.Add(btnAssignments);
-
-                        CardAction btnMilestones = new CardAction()
+                            cardactions.Add(btnAssignments);
+                            CardAction btnMilestones = new CardAction()
                         {
                             Type = ActionTypes.PostBack,
                             Title = "Milestones",
@@ -1320,16 +1314,16 @@ namespace Common
                             Text = "get " + ProjectName + " milestones",
 
                         };
-                        cardactions.Add(btnMilestones);
+                            cardactions.Add(btnMilestones);
 
-                        HeroCard plCard = new HeroCard()
-                        {
-                            Title = ProjectName,
-                            Subtitle = SubtitleVal,
-                            Images = cardImages,
-                            Buttons = cardactions,
-                            Tap = btnTasks,
-                        };
+                            HeroCard plCard = new HeroCard()
+                            {
+                                Title = ProjectName,
+                                Subtitle = SubtitleVal,
+                                Images = cardImages,
+                                Buttons = cardactions,
+                                Tap = btnTasks,
+                            };
                             reply.Attachments.Add(plCard.ToAttachment());
                         }
                     }
