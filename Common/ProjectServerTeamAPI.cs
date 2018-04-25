@@ -945,24 +945,27 @@ namespace Common
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            IEnumerable<JToken> jToken = null;
 
-            int inDexToVal = SIndex + 10;
             Counter = 0;
-            //if (inDexToVal >= jArrays.Count)
-            //    inDexToVal = jArrays.Count;
+           
 
             if (jArrays.Count > 0)
             {
-                for (int startIndex = SIndex; startIndex < jArrays.Count; startIndex++)
-                {
-                    var tsk = jArrays[startIndex];
+                jToken = jArrays.Where(t => (string)t["TaskDuration"] == "0.000000");
 
-                    if (tsk["TaskDuration"] != null)
+                if(jToken !=null)
+                {
+                    if(jToken.Count() >0)
                     {
-                        if ((string)tsk["TaskDuration"] == "0.000000")
+                        int inDexToVal = SIndex + 10;
+                        Counter = jToken.Count();
+                        if (inDexToVal >= jToken.Count())
+                            inDexToVal = jToken.Count();
+
+                        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
                         {
-                            // string TaskDuration = (string)tsk["TaskDuration"];
-                            Counter++;
+                            var tsk = jToken.ElementAt(startIndex);
                             var SubtitleVal = "";
                             string TaskName = (string)tsk["TaskName"];
                             string TaskPercentCompleted = (string)tsk["TaskPercentCompleted"];
@@ -978,11 +981,10 @@ namespace Common
                             };
                             reply.Attachments.Add(plCard.ToAttachment());
                         }
+                            
                     }
-
-                    if (Counter == 10)
-                        break;
                 }
+               
             }
             return reply;
         }
@@ -1002,12 +1004,15 @@ namespace Common
             if (!string.IsNullOrEmpty(PEndDate))
                 endate = DateTime.Parse(PEndDate);
 
-            string formatedstartdate = startdate.ToString("yyyy-MM-ddT23:59:59Z");
-            string formatedendate = endate.ToString("yyyy-MM-ddT23:59:59Z");
+            string formatedstartdatebefore = startdate.ToString("yyyy-MM-ddT23:59:59Z");
+            string formatedendatebefore = endate.ToString("yyyy-MM-ddT23:59:59Z");
 
-            //{13/08/2019 10:24:00}
-            string formatedstartdatePM = startdate.ToString("dd/MM/yyyy 23:59:59");
-            string formatedendatePM = endate.ToString("dd/MM/yyyy 23:59:59");
+            string formatedstartdateafter = startdate.ToString("yyyy-MM-ddT00:00:00Z");
+            string formatedendateafter = endate.ToString("yyyy-MM-ddT00:00:00Z");
+
+            ////{13/08/2019 10:24:00}
+            //string formatedstartdatePM = startdate.ToString("dd/MM/yyyy 23:59:59");
+            //string formatedendatePM = endate.ToString("dd/MM/yyyy 23:59:59");
 
             SecureString passWord = new SecureString();
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
@@ -1022,22 +1027,22 @@ namespace Common
             if (ProjectSEdateFlag == "START")
             {
                 if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdate + "'&$orderby=ProjectStartDate";
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdatebefore + "'&$orderby=ProjectStartDate";
 
                 else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
-                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "'&$orderby=ProjectStartDate";
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdateafter + "'&$orderby=ProjectStartDate";
 
                 else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
-                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "' and ProjectStartDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdateafter + "' and ProjectStartDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectStartDate";
             }
             else if (ProjectSEdateFlag == "Finish")
             {
                 if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
-                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectFinishDate";
                 else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
-                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendateafter + "'&$orderby=ProjectFinishDate";
                 else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
-                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedstartdate + "' and ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedstartdateafter + "' and ProjectFinishDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectFinishDate";
             }
 
             Uri endpointUri = null;
@@ -1057,7 +1062,7 @@ namespace Common
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, completionpercentVal, FilterType, formatedstartdatePM, formatedendatePM, ProjectSEdateFlag, out ProjectCounter);
+                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, out ProjectCounter);
 
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
@@ -1191,7 +1196,7 @@ namespace Common
 
 
 
-        public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, List<JToken> jArrays, int SIndex, int completionpercentVal, string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, out int Counter)
+        public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, List<JToken> jArrays, int SIndex, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
