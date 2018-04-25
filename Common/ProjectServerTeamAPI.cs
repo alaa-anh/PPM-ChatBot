@@ -989,7 +989,7 @@ namespace Common
             return reply;
         }
 
-        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal , string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, out int Counter)
+        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal , string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, string strComparison, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -1020,10 +1020,13 @@ namespace Common
             var webUri = new Uri(_siteUri);
             string AdminAPI = "/_api/ProjectData/Projects";
             // string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "'";
-            if (completionpercentVal == 100)
-                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted eq " + completionpercentVal;
-            if (completionpercentVal == 90)
-                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted lt 100";
+            if(completionpercentVal !=0 && strComparison !=string.Empty)
+                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted "+strComparison+" "+ completionpercentVal;
+
+            //if (completionpercentVal == 100)
+            //    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted eq " + completionpercentVal;
+            //if (completionpercentVal == 90)
+            //    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted lt 100";
             if (ProjectSEdateFlag == "START")
             {
                 if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
@@ -1080,8 +1083,6 @@ namespace Common
             Counter = ProjectCounter;
             return reply;
         }
-
-        
 
         public IMessageActivity GetProjectInfo(IDialogContext dialogContext, string pName, bool optionalDate = false, bool optionalDuration = false, bool optionalCompletion = false, bool optionalPM = false)
         {
@@ -1151,7 +1152,6 @@ namespace Common
             return reply;
         }
 
-
         public string GetProjectPMName(string ProjectName)
         {
             string ProjectPMName = string.Empty;
@@ -1193,8 +1193,6 @@ namespace Common
 
             return pName;
         }
-
-
 
         public IMessageActivity GetFilteredProjects(IDialogContext dialogContext, List<JToken> jArrays, int SIndex, out int Counter)
         {
@@ -1975,8 +1973,8 @@ namespace Common
                 {
                     Type = ActionTypes.PostBack,
                     Title = "Closed Projects",
-                    Value = "get all projects where compeleted percentage is 100%",
-                    Text = "get all projects where compeleted percentage is 100%",
+                    Value = "get all projects where compeleted percentage = 100%",
+                    Text = "get all projects where compeleted percentage = 100%",
                 };
                 cardactions.Add(btnClosedProjects);
 
@@ -1984,8 +1982,8 @@ namespace Common
                 {
                     Type = ActionTypes.PostBack,
                     Title = "Pending Projects",
-                    Value = "get all projects where compeleted percentage is 90%",
-                    Text = "get all projects where compeleted percentage is 90%",
+                    Value = "get all projects where compeleted percentage < 100%",
+                    Text = "get all projects where compeleted percentage < 100%",
                 };
                 cardactions.Add(btnPendingProjects);
 
