@@ -1014,7 +1014,32 @@ namespace Common
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
             string AdminAPI = "/_api/ProjectData/Projects";
-            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "'";
+            // string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "'";
+            if (completionpercentVal == 100)
+                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted eq " + completionpercentVal;
+            if (completionpercentVal == 90)
+                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted lt 100";
+            if (ProjectSEdateFlag == "START")
+            {
+                if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdate + "'&$orderby=ProjectStartDate";
+
+                else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "'&$orderby=ProjectStartDate";
+
+                else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "' and ProjectStartDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
+            }
+            else if (ProjectSEdateFlag == "Finish")
+            {
+                if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
+                else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
+                else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
+                    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedstartdate + "' and ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
+            }
+
             Uri endpointUri = null;
             int ProjectCounter = 0;
             using (var client = new WebClient())
@@ -1026,7 +1051,7 @@ namespace Common
 
                 if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    endpointUri = new Uri(webUri + PMAPI);
+                    endpointUri = new Uri(webUri + AdminAPI);
                     var responce = client.DownloadString(endpointUri);
                     var t = JToken.Parse(responce);
                     JObject results = JObject.Parse(t["d"].ToString());
@@ -1037,30 +1062,7 @@ namespace Common
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
                 {
-                    if(completionpercentVal ==100)
-                        AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted eq "+ completionpercentVal;
-                    if (completionpercentVal == 90)
-                        AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted lt 100";
-                    if (ProjectSEdateFlag == "START")
-                    {
-                        if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'"+ formatedstartdate + "'&$orderby=ProjectStartDate";
-
-                        else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "'&$orderby=ProjectStartDate";
-
-                        else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdate + "' and ProjectStartDate le DateTime'" + formatedendate + "'&$orderby=ProjectStartDate";
-                    }
-                    else if (ProjectSEdateFlag == "Finish")
-                    {
-                        if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
-                        else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
-                        else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
-                            AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedstartdate + "' and ProjectFinishDate le DateTime'" + formatedendate + "'&$orderby=ProjectFinishDate";
-                    }
+                    
 
                     endpointUri = new Uri(webUri + AdminAPI);
                     var responce = client.DownloadString(endpointUri);
@@ -1207,24 +1209,24 @@ namespace Common
 
             if (jArrays.Count > 0)
             {
-                if (completionpercentVal == 100)
-                     jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] == 100);
-                else if (completionpercentVal == 90)
-                    jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] < 100);
+                //if (completionpercentVal == 100)
+                //     jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] == 100);
+                //else if (completionpercentVal == 90)
+                //    jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] < 100);
 
-                if (ProjectSEdateFlag == "START")
-                {
-                    //if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                    //    jToken = jArrays.Where(t => t["ProjectStartDate"] != null && (DateTime)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
+                //if (ProjectSEdateFlag == "START")
+                //{
+                //    if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
+                //        jToken = jArrays.Where(t => t["ProjectStartDate"] != null && (DateTime)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
 
                 //    else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate));
 
                 //    else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(PEndDate));
-                }
-                else if (ProjectSEdateFlag == "Finish")
-                {
+                //}
+                //else if (ProjectSEdateFlag == "Finish")
+                //{
                 //    if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
 
@@ -1232,7 +1234,7 @@ namespace Common
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(PEndDate));
                 //    else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
-                }
+                //}
 
                 //if (jToken !=null)
                 //{
@@ -1244,6 +1246,9 @@ namespace Common
                 //                inDexToVal = jToken.Count();
 
 
+
+                jToken = jArrays.Where(t => (string)t["ProjectOwnerName"] == _userLoggedInName);
+
                 int inDexToVal = SIndex + 10;
                 Counter = jArrays.Count();
                 if (inDexToVal >= jArrays.Count())
@@ -1254,8 +1259,8 @@ namespace Common
                   
                         //var item = jToken.ElementAt(startIndex);
                         var item = jArrays[startIndex];
-                    if (item["ProjectStartDate"] != null && (DateTime)item["ProjectStartDate"] <= DateTime.Parse(pStartDate))
-                    {
+                    //if (item["ProjectStartDate"] != null && (DateTime)item["ProjectStartDate"] <= DateTime.Parse(pStartDate))
+                    //{
                         string SubtitleVal = "";
 
 
@@ -1364,7 +1369,7 @@ namespace Common
                         };
                         reply.Attachments.Add(plCard.ToAttachment());
                     }
-                }
+               // }
 
                 //HeroCard plCard2 = new HeroCard()
                 //{
