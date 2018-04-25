@@ -1209,63 +1209,26 @@ namespace Common
 
             if (jArrays.Count > 0)
             {
-                //if (completionpercentVal == 100)
-                //     jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] == 100);
-                //else if (completionpercentVal == 90)
-                //    jToken = jArrays.Where(t => (int?)t["ProjectPercentCompleted"] < 100);
-
-                //if (ProjectSEdateFlag == "START")
-                //{
-                //    if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                //        jToken = jArrays.Where(t => t["ProjectStartDate"] != null && (DateTime)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
-
-                //    else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
-                //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate));
-
-                //    else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
-                //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(PEndDate));
-                //}
-                //else if (ProjectSEdateFlag == "Finish")
-                //{
-                //    if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
-                //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
-
-                //    else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
-                //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(PEndDate));
-                //    else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
-                //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
-                //}
-
-                //if (jToken !=null)
-                //{
-                //    if (jToken.Count() > 0)
-                //    {
-                //            int inDexToVal = SIndex + 10;
-                //            Counter = jToken.Count();
-                //            if (inDexToVal >= jToken.Count())
-                //                inDexToVal = jToken.Count();
-
-
-
                 jToken = jArrays.Where(t => (string)t["ProjectOwnerName"] == _userLoggedInName);
 
-                int inDexToVal = SIndex + 10;
-                Counter = jArrays.Count();
-                if (inDexToVal >= jArrays.Count())
-                    inDexToVal = jArrays.Count();
 
-                for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+                if (jToken != null)
                 {
-                  
-                        //var item = jToken.ElementAt(startIndex);
-                        var item = jArrays[startIndex];
-                    //if (item["ProjectStartDate"] != null && (DateTime)item["ProjectStartDate"] <= DateTime.Parse(pStartDate))
-                    //{
-                        string SubtitleVal = "";
+                    if (jToken.Count() > 0)
+                    {
+                        int inDexToVal = SIndex + 10;
+                        Counter = jToken.Count();
+                        if (inDexToVal >= jToken.Count())
+                            inDexToVal = jToken.Count();
 
+                        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+                        {
+                            var item = jToken.ElementAt(startIndex);
+                            //var item = jArrays[startIndex];
+                            string SubtitleVal = "";
 
-                        if (item["ProjectName"] != null)
-                            ProjectName = (string)item["ProjectName"];
+                            if (item["ProjectName"] != null)
+                                ProjectName = (string)item["ProjectName"];
 
                         //        if (item["ProjectWorkspaceInternalUrl"] != null)
                         //            ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
@@ -1367,23 +1330,11 @@ namespace Common
                             Buttons = cardactions,
                             Tap = btnTasks,
                         };
-                        reply.Attachments.Add(plCard.ToAttachment());
+                            reply.Attachments.Add(plCard.ToAttachment());
+                        }
                     }
-               // }
-
-                //HeroCard plCard2 = new HeroCard()
-                //{
-                //    Title = pStartDate,
-
-                //};
-                //reply.Attachments.Add(plCard2.ToAttachment());
-
-                //}
-                //}
+                }
             }
-
-          
-
             return reply;
         }
 
