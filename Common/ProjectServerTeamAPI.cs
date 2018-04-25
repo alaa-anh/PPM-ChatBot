@@ -1215,7 +1215,7 @@ namespace Common
                 if (ProjectSEdateFlag == "START")
                 {
                     if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
+                        jToken = jArrays.Where(t => (DateTime)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
 
                 //    else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate));
@@ -1234,7 +1234,7 @@ namespace Common
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
                 }
 
-                if (jToken.Any())
+                if (jToken !=null)
                 {
                 //    if (jToken.Count() > 0)
                 //    {
