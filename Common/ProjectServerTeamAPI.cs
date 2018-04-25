@@ -1234,8 +1234,8 @@ namespace Common
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectFinishDate"] >= DateTime.Parse(pStartDate) && (DateTime?)t["ProjectFinishDate"] <= DateTime.Parse(PEndDate));
                 }
 
-                //if (jToken.Any())
-                //{
+                if (jToken.Any())
+                {
                 //    if (jToken.Count() > 0)
                 //    {
                 //        int inDexToVal = SIndex + 10;
@@ -1356,7 +1356,7 @@ namespace Common
                 //        }
                        
                 //    }
-                //}
+                }
 
                
 
