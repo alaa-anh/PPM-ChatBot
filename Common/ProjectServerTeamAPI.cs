@@ -1214,8 +1214,8 @@ namespace Common
 
                 if (ProjectSEdateFlag == "START")
                 {
-                    if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
-                        jToken = jArrays.Where(t => t["ProjectStartDate"] != null && (DateTime)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
+                    //if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
+                    //    jToken = jArrays.Where(t => t["ProjectStartDate"] != null && (DateTime)t["ProjectStartDate"] <= DateTime.Parse(pStartDate));
 
                 //    else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
                 //        jToken = jArrays.Where(t => (DateTime?)t["ProjectStartDate"] >= DateTime.Parse(pStartDate));
