@@ -365,7 +365,7 @@ namespace PM.BotApplication.Dialogs
             if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
                 EntityRecommendation completionVal;
-                EntityRecommendation ProjectItemIndex , Comparison;
+                EntityRecommendation ProjectItemIndex , Comparisoneq, Comparisonlt, Comparisonle, Comparisongt, Comparisonge;
                 int itemStartIndex = 0;
                 int Counter;
                 int completionpercentVal = 0;
@@ -415,8 +415,20 @@ namespace PM.BotApplication.Dialogs
                 if (luisResult.TryFindEntity("completionVal", out completionVal))
                     completionpercentVal = int.Parse(completionVal.Entity.ToString());
 
-                if (luisResult.TryFindEntity("Comparison", out Comparison))
-                    strComparison = Comparison.Entity.ToString();
+                if (luisResult.TryFindEntity("eq", out Comparisoneq))
+                        strComparison = "eq";
+
+                if (luisResult.TryFindEntity("lt", out Comparisonlt))
+                        strComparison = "lt";
+
+                if (luisResult.TryFindEntity("le", out Comparisonle))
+                        strComparison = "le";
+
+                if (luisResult.TryFindEntity("gt", out Comparisongt))
+                        strComparison = "gt";
+
+                if (luisResult.TryFindEntity("ge", out Comparisonge))
+                        strComparison = "ge";
 
                 messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, FilterType, ProjectSDate, ProjectEDate, ProjectSEdateFlag , strComparison, out Counter);
 
