@@ -364,7 +364,7 @@ namespace PM.BotApplication.Dialogs
             IMessageActivity messageActivity = context.MakeMessage();
             if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
-                EntityRecommendation completionVal;
+                EntityRecommendation completionVal , ProgramID , ProgramIDVal;
                 EntityRecommendation ProjectItemIndex , Comparisoneq, Comparisonlt, Comparisonle, Comparisongt, Comparisonge;
                 int itemStartIndex = 0;
                 int Counter;
@@ -372,6 +372,8 @@ namespace PM.BotApplication.Dialogs
                 string strComparison = string.Empty;
 
                 string FilterType = string.Empty;
+                string SubProgramID = string.Empty;
+
                 string ProjectSEdateFlag =string.Empty;
                 string ProjectED = string.Empty;
                 string ProjectSDate = string.Empty;
@@ -430,7 +432,11 @@ namespace PM.BotApplication.Dialogs
                 if (luisResult.TryFindEntity("ge", out Comparisonge))
                         strComparison = "ge";
 
-                messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, FilterType, ProjectSDate, ProjectEDate, ProjectSEdateFlag , strComparison, out Counter);
+                if (luisResult.TryFindEntity("Program.IDVal", out ProgramIDVal))
+                    SubProgramID = ProgramIDVal.Entity.ToString();
+
+
+                messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).FilterMSProjects(context, itemStartIndex, completionpercentVal, FilterType, ProjectSDate, ProjectEDate, ProjectSEdateFlag , strComparison, SubProgramID , out Counter);
 
                 if (messageActivity != null)
                 {
@@ -513,7 +519,65 @@ namespace PM.BotApplication.Dialogs
             }
         }
 
+        [LuisIntent("GetAllProgramsData")]
+        public async Task GetAllProgramsData(IDialogContext context, LuisResult luisResult)
+        {
+            IMessageActivity messageActivity = null;
 
+
+            if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
+            {
+                EntityRecommendation projectSDate, projectEDate, projectDuration, projectCompletion, projectDate, projectPM;
+                EntityRecommendation ProjectItemIndex;
+                bool showCompletion = false;
+                bool Pdate = false;
+                bool pDuration = false;
+                bool pPM = false;
+                int itemStartIndex = 0;
+                int Counter;
+
+                if (luisResult.TryFindEntity("ItemIndex", out ProjectItemIndex))
+                {
+                    itemStartIndex = int.Parse(ProjectItemIndex.Entity);
+                }
+
+                if (luisResult.TryFindEntity("Project.Completion", out projectCompletion))
+                    showCompletion = true;
+
+                if (luisResult.TryFindEntity("Project.SDate", out projectSDate) || luisResult.TryFindEntity("Project.EDate", out projectEDate) || luisResult.TryFindEntity("Project.Date", out projectDate))
+                    Pdate = true;
+
+                if (luisResult.TryFindEntity("Project.Duration", out projectDuration))
+                    pDuration = true;
+
+                if (luisResult.TryFindEntity("Project.PM", out projectPM))
+                    pPM = true;
+               // else
+               // {
+
+                    messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetMSPrograms(context, itemStartIndex, showCompletion, Pdate, pDuration, pPM, out Counter);
+                    if (messageActivity.Attachments.Count > 0)
+                    {
+                        await context.PostAsync(messageActivity);
+                    }
+                    await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).TotalCountGeneralMessage(context, itemStartIndex, Counter, Enums.ListName.Projects.ToString()));
+
+                    if (Counter > 10)
+                    {
+                        if (Counter > 100)
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, 100, Enums.ListName.Projects.ToString(), "", ""));
+                        else
+                            await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).CreateButtonsPager(context, Counter, Enums.ListName.Projects.ToString(), "", ""));
+
+                        await context.PostAsync(new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).DataSuggestions(context, Enums.ListName.Projects.ToString(), ""));
+                    }
+              //  }
+            }
+            else
+            {
+                PromptDialog.Confirm(context, ResumeAfterConfirmation, "You are note allwed to access the data , do you want to login?");
+            }
+        }
     }
 
 

@@ -989,7 +989,7 @@ namespace Common
             return reply;
         }
 
-        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal , string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, string strComparison, out int Counter)
+        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal , string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, string strComparison,string SubProgramID, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -1019,14 +1019,14 @@ namespace Common
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
             string AdminAPI = "/_api/ProjectData/Projects";
-            // string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "'";
-            if(completionpercentVal !=0 && strComparison !=string.Empty)
-                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted "+strComparison+" "+ completionpercentVal;
+            if(SubProgramID != string.Empty)
+            {
+                SubProgramID = SubProgramID.Replace(" - ", "-");
+                AdminAPI = "/_api/ProjectData/Projects?$filter=ParentProjectId eq guid'" + SubProgramID+ "'";
 
-            //if (completionpercentVal == 100)
-            //    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted eq " + completionpercentVal;
-            //if (completionpercentVal == 90)
-            //    AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted lt 100";
+            }
+            if (completionpercentVal !=0 && strComparison !=string.Empty)
+                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted "+strComparison+" "+ completionpercentVal;          
             if (ProjectSEdateFlag == "START")
             {
                 if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
@@ -2014,6 +2014,435 @@ namespace Common
 
             return reply;
         }
+
+
+
+        public IMessageActivity GetMSPrograms(IDialogContext dialogContext, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
+        {
+            IMessageActivity reply = null;
+            reply = dialogContext.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            Counter = 0;
+
+            SecureString passWord = new SecureString();
+            foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+            SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+            var webUri = new Uri(_siteUri);
+            string AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectType eq 6";
+           // string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectType eq 6";
+            Uri endpointUri = null;
+            int ProjectCounter = 0;
+            using (var client = new WebClient())
+            {
+                client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
+                client.Credentials = credentials;
+                client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
+                if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    endpointUri = new Uri(webUri + AdminAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetPMPrograms(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                }
+                else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
+                {
+                    endpointUri = new Uri(webUri + AdminAPI);
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllPrograms(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                }
+            }
+            Counter = ProjectCounter;
+            return reply;
+        }
+
+        public IMessageActivity GetAllPrograms(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
+        {
+            IMessageActivity reply = null;
+            reply = context.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+
+            int inDexToVal = SIndex + 10;
+            Counter = jArrays.Count;
+            if (inDexToVal >= jArrays.Count)
+                inDexToVal = jArrays.Count;
+
+            DateTime ProjectFinishDate = new DateTime();
+            DateTime ProjectStartDate = new DateTime();
+
+            string ProjectName = string.Empty;
+            string ProgramID = string.Empty;
+
+            string ProjectWorkspaceInternalUrl = string.Empty;
+            string ProjectPercentCompleted = string.Empty;
+            string ProjectDuration = string.Empty;
+            string ProjectOwnerName = string.Empty;
+
+            if (jArrays.Count > 0)
+            {
+                for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+                {
+                    //foreach (var item in jArrays)
+                    // {
+                    var item = jArrays[startIndex];
+                    string SubtitleVal = "";
+                    if (item["ProjectName"] != null)
+                        ProjectName = (string)item["ProjectName"];
+
+                    if (item["ProjectId"] != null)
+                        ProgramID = (string)item["ProjectId"];
+
+
+                    if (item["ProjectWorkspaceInternalUrl"] != null)
+                        ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
+
+                    if (item["ProjectPercentCompleted"] != null)
+                        ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
+
+                    if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                        ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
+
+                    if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                        ProjectStartDate = (DateTime)item["ProjectStartDate"];
+
+                    if (item["ProjectDuration"] != null)
+                        ProjectDuration = (string)item["ProjectDuration"];
+
+                    if (item["ProjectOwnerName"] != null)
+                        ProjectOwnerName = (string)item["ProjectOwnerName"];
+
+
+
+
+
+
+                    if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
+                    {
+                        SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
+                        if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Finish Date :\n</br>";
+
+                        if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                            SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Start Date :\n</br>";
+
+
+                        SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+                        SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+                    }
+
+                    else if (ProjectDates == true)
+                    {
+                        if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                            SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Finish Date :\n</br>";
+
+                        if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                            SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                        else
+                            SubtitleVal += "Start Date :\n</br>";
+
+                    }
+                    else if (PDuration == true)
+                    {
+                        SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+                    }
+                    else if (projectManager == true)
+                    {
+                        SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+                    }
+                    string ImageURL = "http://02-code.com/images/logo.jpg";
+                    List<CardImage> cardImages = new List<CardImage>();
+                    List<CardAction> cardactions = new List<CardAction>();
+                    cardImages.Add(new CardImage(url: ImageURL));
+                    CardAction btnWebsite = new CardAction()
+                    {
+                        Type = ActionTypes.OpenUrl,
+                        Title = "Open",
+                        Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
+                    };
+                    CardAction btnSubProjects = new CardAction()
+                    {
+                        Type = ActionTypes.PostBack,
+                        Title = "Sub Projects",
+                        Value = "get all projects where program id is "+ProgramID,
+                        //  DisplayText = "show a list of " + ProjectName + " tasks",
+                        Text = "get all projects where program id is " + ProgramID,
+
+                    };
+                    cardactions.Add(btnSubProjects);
+
+                    //CardAction btnTasks = new CardAction()
+                    //{
+                    //    Type = ActionTypes.PostBack,
+                    //    Title = "Tasks",
+                    //    Value = "show a list of " + ProjectName + " tasks",
+                    //    //  DisplayText = "show a list of " + ProjectName + " tasks",
+                    //    Text = "show a list of " + ProjectName + " tasks",
+                    //};
+                    //cardactions.Add(btnTasks);
+
+                    //CardAction btnIssues = new CardAction()
+                    //{
+                    //    Type = ActionTypes.PostBack,
+                    //    Title = "Issues",
+                    //    Value = "show a list of " + ProjectName + " issues",
+                    //    Text = "show a list of " + ProjectName + " issues"
+                    //};
+                    //cardactions.Add(btnIssues);
+
+                    //CardAction btnRisks = new CardAction()
+                    //{
+                    //    Type = ActionTypes.PostBack,
+                    //    Title = "Risks",
+                    //    Value = "Show risks and the assigned resources of " + ProjectName,
+                    //    Text = "Show risks and the assigned resources of " + ProjectName,
+
+                    //};
+                    //cardactions.Add(btnRisks);
+
+                    //CardAction btnDeliverables = new CardAction()
+                    //{
+                    //    Type = ActionTypes.PostBack,
+                    //    Title = "Deliverables",
+                    //    Value = "Show " + ProjectName + " deliverables",
+                    //    Text = "Show " + ProjectName + " deliverables",
+                    //};
+                    //cardactions.Add(btnDeliverables);
+
+                    //CardAction btnAssignments = new CardAction()
+                    //{
+                    //    Type = ActionTypes.PostBack,
+                    //    Title = "Assignments",
+                    //    Value = "get " + ProjectName + " assignments",
+                    //    Text = "get " + ProjectName + " assignments",
+
+                    //};
+                    //cardactions.Add(btnAssignments);
+
+                    //CardAction btnMilestones = new CardAction()
+                    //{
+                    //    Type = ActionTypes.PostBack,
+                    //    Title = "Milestones",
+                    //    Value = "get " + ProjectName + " milestones",
+                    //    Text = "get " + ProjectName + " milestones",
+
+                    //};
+                    //cardactions.Add(btnMilestones);
+
+                    HeroCard plCard = new HeroCard()
+                    {
+                        Title = ProjectName,
+                        Subtitle = SubtitleVal,
+                        Images = cardImages,
+                        Buttons = cardactions,
+                     //   Tap = btnTasks,
+                    };
+                    reply.Attachments.Add(plCard.ToAttachment());
+                }
+
+            }
+
+            return reply;
+        }
+
+        public IMessageActivity GetPMPrograms(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
+        {
+            IMessageActivity reply = null;
+            reply = context.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            Counter = 0;
+            IEnumerable<JToken> jToken = null;
+
+
+
+            DateTime ProjectFinishDate = new DateTime();
+            DateTime ProjectStartDate = new DateTime();
+
+            string ProjectName = string.Empty;
+            string ProjectWorkspaceInternalUrl = string.Empty;
+            string ProjectPercentCompleted = string.Empty;
+            string ProjectDuration = string.Empty;
+            string ProjectOwnerName = string.Empty;
+
+            if (jArrays.Count > 0)
+            {
+                jToken = jArrays.Where(t => (string)t["ProjectOwnerName"] == _userLoggedInName);
+
+                if (jToken != null)
+                {
+                    if (jToken.Count() > 0)
+                    {
+                        int inDexToVal = SIndex + 10;
+                        Counter = jToken.Count();
+                        if (inDexToVal >= jToken.Count())
+                            inDexToVal = jToken.Count();
+                        for (int startIndex = SIndex; startIndex < inDexToVal; startIndex++)
+                        {
+                            //foreach (var item in jArrays)
+                            // {
+                            var item = jArrays[startIndex];
+                            string SubtitleVal = "";
+                            if (item["ProjectName"] != null)
+                                ProjectName = (string)item["ProjectName"];
+
+                            if (item["ProjectWorkspaceInternalUrl"] != null)
+                                ProjectWorkspaceInternalUrl = (string)item["ProjectWorkspaceInternalUrl"];
+
+                            if (item["ProjectPercentCompleted"] != null)
+                                ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
+
+                            if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                                ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
+
+                            if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                                ProjectStartDate = (DateTime)item["ProjectStartDate"];
+
+                            if (item["ProjectDuration"] != null)
+                                ProjectDuration = (string)item["ProjectDuration"];
+
+                            if (item["ProjectOwnerName"] != null)
+                                ProjectOwnerName = (string)item["ProjectOwnerName"];
+
+
+
+
+
+
+                            if (showCompletion == false && ProjectDates == false && PDuration == false && projectManager == false)
+                            {
+                                SubtitleVal += "Completed Percentage :\n" + ProjectPercentCompleted + "%</br>";
+                                if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                                    SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                                else
+                                    SubtitleVal += "Finish Date :\n</br>";
+
+                                if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                                    SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                                else
+                                    SubtitleVal += "Start Date :\n</br>";
+
+
+                                SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+                                SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+                            }
+
+                            else if (ProjectDates == true)
+                            {
+                                if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
+                                    SubtitleVal += "Finish Date :\n" + ProjectFinishDate.ToString() + "</br>";
+                                else
+                                    SubtitleVal += "Finish Date :\n</br>";
+
+                                if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
+                                    SubtitleVal += "Start Date :\n" + ProjectStartDate.ToString() + "</br>";
+                                else
+                                    SubtitleVal += "Start Date :\n</br>";
+
+                            }
+                            else if (PDuration == true)
+                            {
+                                SubtitleVal += "Project Duration :\n" + ProjectDuration + "</br>";
+                            }
+                            else if (projectManager == true)
+                            {
+                                SubtitleVal += "Project Manager :\n" + ProjectOwnerName + "</br>";
+                            }
+                            string ImageURL = "http://02-code.com/images/logo.jpg";
+                            List<CardImage> cardImages = new List<CardImage>();
+                            List<CardAction> cardactions = new List<CardAction>();
+                            cardImages.Add(new CardImage(url: ImageURL));
+                            CardAction btnWebsite = new CardAction()
+                            {
+                                Type = ActionTypes.OpenUrl,
+                                Title = "Open",
+                                Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
+                            };
+                            CardAction btnTasks = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Tasks",
+                                Value = "show a list of " + ProjectName + " tasks",
+                                //  DisplayText = "show a list of " + ProjectName + " tasks",
+                                Text = "show a list of " + ProjectName + " tasks",
+                            };
+                            cardactions.Add(btnTasks);
+
+                            CardAction btnIssues = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Issues",
+                                Value = "show a list of " + ProjectName + " issues",
+                                Text = "show a list of " + ProjectName + " issues"
+                            };
+                            cardactions.Add(btnIssues);
+
+                            CardAction btnRisks = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Risks",
+                                Value = "Show risks and the assigned resources of " + ProjectName,
+                                Text = "Show risks and the assigned resources of " + ProjectName,
+
+                            };
+                            cardactions.Add(btnRisks);
+
+                            CardAction btnDeliverables = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Deliverables",
+                                Value = "Show " + ProjectName + " deliverables",
+                                Text = "Show " + ProjectName + " deliverables",
+                            };
+                            cardactions.Add(btnDeliverables);
+
+                            CardAction btnAssignments = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Assignments",
+                                Value = "get " + ProjectName + " assignments",
+                                Text = "get " + ProjectName + " assignments",
+
+                            };
+                            cardactions.Add(btnAssignments);
+
+                            CardAction btnMilestones = new CardAction()
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Milestones",
+                                Value = "get " + ProjectName + " milestones",
+                                Text = "get " + ProjectName + " milestones",
+
+                            };
+                            cardactions.Add(btnMilestones);
+
+                            HeroCard plCard = new HeroCard()
+                            {
+                                Title = ProjectName,
+                                Subtitle = SubtitleVal,
+                                Images = cardImages,
+                                Buttons = cardactions,
+                                Tap = btnTasks,
+                            };
+                            reply.Attachments.Add(plCard.ToAttachment());
+                        }
+                    }
+                }
+
+            }
+
+            return reply;
+        }
+
         //private IMessageActivity GetResourceLoggedInTasks(IDialogContext dialogContext, int SIndex, ProjectContext context, PublishedProject proj, bool Completed, bool NotCompleted, bool delayed, out int Counter)
         //{
         //    var SubtitleVal = "";
