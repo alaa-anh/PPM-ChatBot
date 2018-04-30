@@ -1070,8 +1070,6 @@ namespace Common
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
                 {
-                    
-
                     endpointUri = new Uri(webUri + AdminAPI);
                     var responce = client.DownloadString(endpointUri);
                     var t = JToken.Parse(responce);
@@ -2029,7 +2027,7 @@ namespace Common
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
             string AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectType eq 6";
-           // string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectType eq 6";
+            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectType eq 6 and ProjectOwnerName eq '" + _userLoggedInName + "'";
             Uri endpointUri = null;
             int ProjectCounter = 0;
             using (var client = new WebClient())
@@ -2040,12 +2038,12 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
                 if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    endpointUri = new Uri(webUri + AdminAPI);
+                    endpointUri = new Uri(webUri + PMAPI);
                     var responce = client.DownloadString(endpointUri);
                     var t = JToken.Parse(responce);
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                    reply = GetPMPrograms(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                    reply = GetAllPrograms(dialogContext, jArrays, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
                 {
@@ -2376,7 +2374,6 @@ namespace Common
                                 Text = "show a list of " + ProjectName + " tasks",
                             };
                             cardactions.Add(btnTasks);
-
                             CardAction btnIssues = new CardAction()
                             {
                                 Type = ActionTypes.PostBack,
@@ -2385,7 +2382,6 @@ namespace Common
                                 Text = "show a list of " + ProjectName + " issues"
                             };
                             cardactions.Add(btnIssues);
-
                             CardAction btnRisks = new CardAction()
                             {
                                 Type = ActionTypes.PostBack,
@@ -2395,7 +2391,6 @@ namespace Common
 
                             };
                             cardactions.Add(btnRisks);
-
                             CardAction btnDeliverables = new CardAction()
                             {
                                 Type = ActionTypes.PostBack,
@@ -2404,7 +2399,6 @@ namespace Common
                                 Text = "Show " + ProjectName + " deliverables",
                             };
                             cardactions.Add(btnDeliverables);
-
                             CardAction btnAssignments = new CardAction()
                             {
                                 Type = ActionTypes.PostBack,
@@ -2414,7 +2408,6 @@ namespace Common
 
                             };
                             cardactions.Add(btnAssignments);
-
                             CardAction btnMilestones = new CardAction()
                             {
                                 Type = ActionTypes.PostBack,
@@ -2424,7 +2417,6 @@ namespace Common
 
                             };
                             cardactions.Add(btnMilestones);
-
                             HeroCard plCard = new HeroCard()
                             {
                                 Title = ProjectName,
