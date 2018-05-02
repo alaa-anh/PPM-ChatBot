@@ -1019,36 +1019,64 @@ namespace Common
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
             string AdminAPI = "/_api/ProjectData/Projects";
-            if(SubProgramID != string.Empty)
+            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "'";
+
+            if (SubProgramID != string.Empty)
             {
                 SubProgramID = SubProgramID.Replace(" - ", "-");
                 AdminAPI = "/_api/ProjectData/Projects?$filter=ParentProjectId eq guid'" + SubProgramID+ "'";
+                PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ParentProjectId eq guid'" + SubProgramID + "'";
 
             }
-            if (completionpercentVal !=0 && strComparison !=string.Empty)
-                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted "+strComparison+" "+ completionpercentVal;          
+            if (completionpercentVal != 0 && strComparison != string.Empty)
+            {
+                AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted " + strComparison + " " + completionpercentVal;
+                PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectPercentCompleted " + strComparison + " " + completionpercentVal;
+
+            }
             if (ProjectSEdateFlag == "START")
             {
                 if (FilterType.ToUpper() == "BEFORE" && pStartDate != "")
+                {
                     AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate le DateTime'" + formatedstartdatebefore + "'&$orderby=ProjectStartDate";
+                    PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectStartDate le DateTime'" + formatedstartdatebefore + "'&$orderby=ProjectStartDate";
+
+                }
 
                 else if (FilterType.ToUpper() == "AFTER" && pStartDate != "")
+                {
                     AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdateafter + "'&$orderby=ProjectStartDate";
+                    PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectStartDate ge DateTime'" + formatedstartdateafter + "'&$orderby=ProjectStartDate";
+
+                }
 
                 else if (FilterType.ToUpper() == "BETWEEN" && pStartDate != "")
+                {
                     AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectStartDate ge DateTime'" + formatedstartdateafter + "' and ProjectStartDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectStartDate";
+                    PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectStartDate ge DateTime'" + formatedstartdateafter + "' and ProjectStartDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectStartDate";
+
+                }
             }
             else if (ProjectSEdateFlag == "Finish")
             {
                 if (FilterType.ToUpper() == "BEFORE" && PEndDate != "")
+                {
                     AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectFinishDate";
+                    PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectFinishDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectFinishDate";
+                }
                 else if (FilterType.ToUpper() == "AFTER" && PEndDate != "")
+                {
                     AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedendateafter + "'&$orderby=ProjectFinishDate";
+                    PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectFinishDate ge DateTime'" + formatedendateafter + "'&$orderby=ProjectFinishDate";
+                }
                 else if (FilterType.ToUpper() == "BETWEEN" && PEndDate != "")
+                {
                     AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectFinishDate ge DateTime'" + formatedstartdateafter + "' and ProjectFinishDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectFinishDate";
+                    PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectFinishDate ge DateTime'" + formatedstartdateafter + "' and ProjectFinishDate le DateTime'" + formatedendatebefore + "'&$orderby=ProjectFinishDate";
+                }
             }
 
-            Uri endpointUri = null;
+                Uri endpointUri = null;
             int ProjectCounter = 0;
             using (var client = new WebClient())
             {
@@ -1059,13 +1087,13 @@ namespace Common
 
                 if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    endpointUri = new Uri(webUri + AdminAPI);
+                    endpointUri = new Uri(webUri + PMAPI);
                     var responce = client.DownloadString(endpointUri);
                     var t = JToken.Parse(responce);
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                    reply = GetFilteredProjects(dialogContext, jArrays, SIndex, out ProjectCounter);
+                    reply = GetAllProjects(dialogContext, jArrays, SIndex, false, false, false, false, out ProjectCounter);
 
                 }
                 else if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
