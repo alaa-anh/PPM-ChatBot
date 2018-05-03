@@ -1028,7 +1028,7 @@ namespace Common
                 PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ParentProjectId eq guid'" + SubProgramID + "'";
 
             }
-            if (completionpercentVal != 0 && strComparison != string.Empty)
+            if (strComparison != string.Empty)
             {
                 AdminAPI = "/_api/ProjectData/Projects?$filter=ProjectPercentCompleted " + strComparison + " " + completionpercentVal;
                 PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ProjectPercentCompleted " + strComparison + " " + completionpercentVal;
