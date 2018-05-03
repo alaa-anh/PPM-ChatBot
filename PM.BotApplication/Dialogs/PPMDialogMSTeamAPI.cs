@@ -364,7 +364,7 @@ namespace PM.BotApplication.Dialogs
             IMessageActivity messageActivity = context.MakeMessage();
             if (context.UserData.TryGetValue<string>("UserName", out userName) && (context.UserData.TryGetValue<string>("Password", out password)) && (context.UserData.TryGetValue<string>("UserLoggedInName", out UserLoggedInName)))
             {
-                EntityRecommendation completionVal , ProgramID , ProgramIDVal;
+                EntityRecommendation completionVal , ProgramID , ProgramIDVal , Comparison;
                 EntityRecommendation ProjectItemIndex , Comparisoneq, Comparisonlt, Comparisonle, Comparisongt, Comparisonge;
                 int itemStartIndex = 0;
                 int Counter;
@@ -417,20 +417,9 @@ namespace PM.BotApplication.Dialogs
                 if (luisResult.TryFindEntity("completionVal", out completionVal))
                     completionpercentVal = int.Parse(completionVal.Entity.ToString());
 
-                if (luisResult.TryFindEntity("eq", out Comparisoneq))
-                        strComparison = "eq";
-
-                if (luisResult.TryFindEntity("lt", out Comparisonlt))
-                        strComparison = "lt";
-
-                if (luisResult.TryFindEntity("le", out Comparisonle))
-                        strComparison = "le";
-
-                if (luisResult.TryFindEntity("gt", out Comparisongt))
-                        strComparison = "gt";
-
-                if (luisResult.TryFindEntity("ge", out Comparisonge))
-                        strComparison = "ge";
+                if (luisResult.TryFindEntity("Comparison", out Comparison))
+                    strComparison = ((List<object>)Comparison.Resolution["values"]).Cast<string>().FirstOrDefault();
+              
 
                 if (luisResult.TryFindEntity("Program.IDVal", out ProgramIDVal))
                     SubProgramID = ProgramIDVal.Entity.ToString();
