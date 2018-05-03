@@ -1999,8 +1999,8 @@ namespace Common
                 {
                     Type = ActionTypes.PostBack,
                     Title = "Closed Projects",
-                    Value = "get all projects where compeleted percentage = 100%",
-                    Text = "get all projects where compeleted percentage = 100%",
+                    Value = "get all projects where completed percentage = 100%",
+                    Text = "get all projects where completed percentage = 100%",
                 };
                 cardactions.Add(btnClosedProjects);
 
@@ -2008,8 +2008,8 @@ namespace Common
                 {
                     Type = ActionTypes.PostBack,
                     Title = "Pending Projects",
-                    Value = "get all projects where compeleted percentage < 100%",
-                    Text = "get all projects where compeleted percentage < 100%",
+                    Value = "get all projects where completed percentage < 100%",
+                    Text = "get all projects where completed percentage < 100%",
                 };
                 cardactions.Add(btnPendingProjects);
 
