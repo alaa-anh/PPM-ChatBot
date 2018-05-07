@@ -193,7 +193,7 @@ namespace PM.BotApplication.Dialogs
                 EntityRecommendation ItemIndex;
                 EntityRecommendation CompletedTask;
                 EntityRecommendation NotCompletedTask;
-                EntityRecommendation DelayedTask, projectMilestones;
+                EntityRecommendation DelayedTask, projectMilestones, projectDependencies;
 
                 string searchTerm_ProjectName = string.Empty;
                 string ListName = string.Empty;
@@ -261,6 +261,11 @@ namespace PM.BotApplication.Dialogs
                     {
                         ListName = Common.Enums.ListName.Milestones.ToString();
                         messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectMilestones(context, itemStartIndex, searchTerm_ProjectName, out Counter);
+                    }
+                    else if (luisResult.TryFindEntity("Project.Dependencies", out projectDependencies))
+                    {
+                        ListName = Common.Enums.ListName.Dependencies.ToString();
+                        messageActivity = new Common.ProjectServerTeamAPI(userName, password, UserLoggedInName).GetProjectDependencies(context, itemStartIndex, searchTerm_ProjectName, out Counter);
                     }
                     else if (ListName == "")
                     {

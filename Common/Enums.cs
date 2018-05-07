@@ -17,6 +17,7 @@ namespace Common
             Assignments = 5,
             Projects = 6,
             Milestones = 7,
+            Dependencies = 8,
 
 
 

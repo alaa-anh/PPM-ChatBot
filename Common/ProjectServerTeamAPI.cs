@@ -276,6 +276,16 @@ namespace Common
                     };
                     cardactions.Add(btnMilestones);
 
+                    CardAction btnDependinces = new CardAction()
+                    {
+                        Type = ActionTypes.PostBack,
+                        Title = "Dependencies",
+                        Value = "get " + ProjectName + " dependencies",
+                        Text = "get " + ProjectName + " dependencies",
+
+                    };
+                    cardactions.Add(btnDependinces);
+
                     HeroCard plCard = new HeroCard()
                     {
                         Title = ProjectName,
@@ -695,6 +705,77 @@ namespace Common
                 }
 
 
+
+            }
+
+            Counter = TaskCounter;
+            return reply;
+        }
+
+        public IMessageActivity GetProjectDependencies(IDialogContext dialogContext, int itemStartIndex, string pName, out int Counter)
+        {
+            IMessageActivity reply = null;
+            reply = dialogContext.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            Counter = 0;
+
+            SecureString passWord = new SecureString();
+            foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
+            SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+            var webUri = new Uri(_siteUri);
+            string PMAPI = "";
+
+
+            Uri endpointUri = null;
+            int TaskCounter = 0;
+            using (var client = new WebClient())
+            {
+                client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
+                client.Credentials = credentials;
+                client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
+
+
+               
+                pName = ProjectNameStr(pName);
+                PMAPI = "/_api/ProjectData/Dependencies?$filter=ProjectName eq '" + pName + "'";
+
+                //if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
+                //{
+                //    // reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
+                //}
+                //else 
+                if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
+                {
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
+                    {
+                        endpointUri = new Uri(webUri + PMAPI);
+                        var responce = client.DownloadString(endpointUri);
+                        var t = JToken.Parse(responce);
+                        JObject results = JObject.Parse(t["d"].ToString());
+                        List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                        reply = GetAllTasks(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    }
+                    else
+                    {
+                        HeroCard plCard = new HeroCard()
+                        {
+                            Title = "You Don't have permission to access this project",
+                        };
+                        reply.Attachments.Add(plCard.ToAttachment());
+
+                    }
+                }
+                else
+                {
+                    // endpointUri = new Uri(webUri + PMAPI);
+                    endpointUri = new Uri("https://m365x892385.sharepoint.com/sites/pwa/_api/ProjectData/Projects(guid'c54ff8c6-4e51-e711-80d4-00155d38270c')/Dependencies");
+                    var responce = client.DownloadString(endpointUri);
+                    var t = JToken.Parse(responce);
+                    JObject results = JObject.Parse(t["d"].ToString());
+                    List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
+                    reply = GetAllTasks(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                }
 
             }
 
