@@ -79,12 +79,12 @@ namespace Common
             bool exist = false;
 
             string UserLoggedInName = string.Empty;
-                using (ProjectContext ctx = new ProjectContext(_siteUri))
-                {
+            using (ProjectContext ctx = new ProjectContext(_siteUri))
+            {
 
-                    SecureString passWord = new SecureString();
-                    foreach (char c in _userPasswordAdmin) passWord.AppendChar(c);
-                    ctx.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
+                SecureString passWord = new SecureString();
+                foreach (char c in _userPasswordAdmin) passWord.AppendChar(c);
+                ctx.Credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
 
                 User user = ctx.Web.EnsureUser(_userName);
                 ctx.Load(user);
@@ -96,7 +96,7 @@ namespace Common
                     ctx.ExecuteQuery();
                     GroupCollection group = user.Groups;
 
-                    if (group.Count>0)
+                    if (group.Count > 0)
                     {
                         IEnumerable<Group> usergroup = ctx.LoadQuery(user.Groups.Where(p => p.Title == groupName));
                         ctx.ExecuteQuery();
@@ -115,7 +115,7 @@ namespace Common
             }
             return exist;
         }
-       public IMessageActivity GetAllProjects(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
+        public IMessageActivity GetAllProjects(IDialogContext context, List<JToken> jArrays, int SIndex, bool showCompletion, bool ProjectDates, bool PDuration, bool projectManager, out int Counter)
         {
             IMessageActivity reply = null;
             reply = context.MakeMessage();
@@ -153,7 +153,7 @@ namespace Common
                         ProjectPercentCompleted = (string)item["ProjectPercentCompleted"];
 
                     if (item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != null && (string)item["ProjectFinishDate"] != "")
-                         ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
+                        ProjectFinishDate = (DateTime)item["ProjectFinishDate"];
 
                     if (item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != null && (string)item["ProjectStartDate"] != "")
                         ProjectStartDate = (DateTime)item["ProjectStartDate"];
@@ -314,7 +314,7 @@ namespace Common
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
             string PMAPI = "";
-           
+
 
             Uri endpointUri = null;
             int TaskCounter = 0;
@@ -340,15 +340,15 @@ namespace Common
                 //}
                 //else
                 pName = ProjectNameStr(pName);
-                    PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName eq '" + pName + "'";
+                PMAPI = "/_api/ProjectData/Tasks?$filter=ProjectName eq '" + pName + "'";
 
                 if (GetUserGroup("Team Members (Project Web App Synchronized)") || GetUserGroup("Team Leads for Project Web App"))
                 {
-                   // reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
+                    // reply = GetResourceLoggedInTasks(dialogContext, itemStartIndex, context, project, Completed, NotCompleted, delayed, out TaskCounter);
                 }
                 else if (GetUserGroup("Project Managers (Project Web App Synchronized)"))
                 {
-                    if(_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
+                    if (_userLoggedInName.ToLower() == GetProjectPMName(pName).ToLower())
                     {
                         endpointUri = new Uri(webUri + PMAPI);
                         var responce = client.DownloadString(endpointUri);
@@ -367,18 +367,18 @@ namespace Common
 
                     }
                 }
-                else 
+                else
                 {
                     endpointUri = new Uri(webUri + PMAPI);
                     var responce = client.DownloadString(endpointUri);
                     var t = JToken.Parse(responce);
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                    reply = GetAllTasks(dialogContext, itemStartIndex, jArrays, out TaskCounter);                  
+                    reply = GetAllTasks(dialogContext, itemStartIndex, jArrays, out TaskCounter);
                 }
-               
+
             }
-        
+
             Counter = TaskCounter;
             return reply;
         }
@@ -397,7 +397,7 @@ namespace Common
             pName = ProjectNameStr(pName);
 
             string PMAPI = "/_api/ProjectData/Issues?$filter=ProjectName  eq '" + pName + "'";
-            
+
 
 
             Uri endpointUri = null;
@@ -507,7 +507,7 @@ namespace Common
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                    reply = GetAllRisks(dialogContext,itemStartIndex, jArrays, out TaskCounter);
+                    reply = GetAllRisks(dialogContext, itemStartIndex, jArrays, out TaskCounter);
                 }
             }
 
@@ -574,7 +574,7 @@ namespace Common
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                    reply = GetAllDeliverabels(dialogContext,itemStartIndex, jArrays, out TaskCounter);
+                    reply = GetAllDeliverabels(dialogContext, itemStartIndex, jArrays, out TaskCounter);
                 }
             }
             Counter = TaskCounter;
@@ -636,7 +636,7 @@ namespace Common
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
 
-                    reply = GetAllAssignments(dialogContext,itemStartIndex, jArrays ,  out TaskCounter);
+                    reply = GetAllAssignments(dialogContext, itemStartIndex, jArrays, out TaskCounter);
                 }
 
 
@@ -701,7 +701,7 @@ namespace Common
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
 
-                     reply = GetAllProjectMilestones(dialogContext, itemStartIndex, jArrays, out TaskCounter);
+                    reply = GetAllProjectMilestones(dialogContext, itemStartIndex, jArrays, out TaskCounter);
                 }
 
 
@@ -736,7 +736,7 @@ namespace Common
                 client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
 
 
-               
+
                 pName = ProjectNameStr(pName);
                 PMAPI = "/_api/ProjectData/Dependencies?$filter=ProjectName eq '" + pName + "'";
 
@@ -820,7 +820,7 @@ namespace Common
             return reply;
         }
 
-        private IMessageActivity GetAllIssues(IDialogContext dialogContext, int SIndex, List<JToken> jArrays , out int Counter)
+        private IMessageActivity GetAllIssues(IDialogContext dialogContext, int SIndex, List<JToken> jArrays, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -853,7 +853,7 @@ namespace Common
             return reply;
         }
 
-        private IMessageActivity GetAllRisks(IDialogContext dialogContext, int SIndex, List<JToken> jArrays , out int Counter)
+        private IMessageActivity GetAllRisks(IDialogContext dialogContext, int SIndex, List<JToken> jArrays, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -919,7 +919,7 @@ namespace Common
             return reply;
         }
 
-        private IMessageActivity GetAllDeliverabels(IDialogContext dialogContext, int SIndex, List<JToken> jArrays , out int Counter)
+        private IMessageActivity GetAllDeliverabels(IDialogContext dialogContext, int SIndex, List<JToken> jArrays, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -1029,15 +1029,15 @@ namespace Common
             IEnumerable<JToken> jToken = null;
 
             Counter = 0;
-           
+
 
             if (jArrays.Count > 0)
             {
                 jToken = jArrays.Where(t => (string)t["TaskDuration"] == "0.000000");
 
-                if(jToken !=null)
+                if (jToken != null)
                 {
-                    if(jToken.Count() >0)
+                    if (jToken.Count() > 0)
                     {
                         int inDexToVal = SIndex + 10;
                         Counter = jToken.Count();
@@ -1062,15 +1062,15 @@ namespace Common
                             };
                             reply.Attachments.Add(plCard.ToAttachment());
                         }
-                            
+
                     }
                 }
-               
+
             }
             return reply;
         }
 
-        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal , string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, string strComparison,string SubProgramID, out int Counter)
+        public IMessageActivity FilterMSProjects(IDialogContext dialogContext, int SIndex, int completionpercentVal, string FilterType, string pStartDate, string PEndDate, string ProjectSEdateFlag, string strComparison, string SubProgramID, out int Counter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -1105,7 +1105,7 @@ namespace Common
             if (SubProgramID != string.Empty)
             {
                 SubProgramID = SubProgramID.Replace(" - ", "-");
-                AdminAPI = "/_api/ProjectData/Projects?$filter=ParentProjectId eq guid'" + SubProgramID+ "'";
+                AdminAPI = "/_api/ProjectData/Projects?$filter=ParentProjectId eq guid'" + SubProgramID + "'";
                 PMAPI = "/_api/ProjectData/Projects?$filter=ProjectOwnerName eq '" + _userLoggedInName + "' and ParentProjectId eq guid'" + SubProgramID + "'";
 
             }
@@ -1157,7 +1157,7 @@ namespace Common
                 }
             }
 
-                Uri endpointUri = null;
+            Uri endpointUri = null;
             int ProjectCounter = 0;
             using (var client = new WebClient())
             {
@@ -1266,7 +1266,7 @@ namespace Common
             foreach (char c in _userPasswordAdmin.ToCharArray()) passWord.AppendChar(c);
             SharePointOnlineCredentials credentials = new SharePointOnlineCredentials(_userNameAdmin, passWord);
             var webUri = new Uri(_siteUri);
-            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectName eq '"+ProjectName+"'";
+            string PMAPI = "/_api/ProjectData/Projects?$filter=ProjectName eq '" + ProjectName + "'";
             Uri endpointUri = null;
             using (var client = new WebClient())
             {
@@ -1280,9 +1280,9 @@ namespace Common
                 JObject results = JObject.Parse(t["d"].ToString());
                 List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
 
-                if(jArrays !=null)
+                if (jArrays != null)
                 {
-                    if(jArrays.Count >0)
+                    if (jArrays.Count > 0)
                     {
                         if (jArrays[0]["ProjectOwnerName"] != null)
                             ProjectPMName = (string)jArrays[0]["ProjectOwnerName"];
@@ -1368,62 +1368,62 @@ namespace Common
                             List<CardAction> cardactions = new List<CardAction>();
                             cardImages.Add(new CardImage(url: ImageURL));
                             CardAction btnWebsite = new CardAction()
-                        {
-                            Type = ActionTypes.OpenUrl,
-                            Title = "Open",
-                            Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
-                        };
+                            {
+                                Type = ActionTypes.OpenUrl,
+                                Title = "Open",
+                                Value = ProjectWorkspaceInternalUrl + "?redirect_uri={" + ProjectWorkspaceInternalUrl + "}",
+                            };
                             CardAction btnTasks = new CardAction()
-                        {
-                            Type = ActionTypes.PostBack,
-                            Title = "Tasks",
-                            Value = "show a list of " + ProjectName + " tasks",
-                            //  DisplayText = "show a list of " + ProjectName + " tasks",
-                            Text = "show a list of " + ProjectName + " tasks",
-                        };
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Tasks",
+                                Value = "show a list of " + ProjectName + " tasks",
+                                //  DisplayText = "show a list of " + ProjectName + " tasks",
+                                Text = "show a list of " + ProjectName + " tasks",
+                            };
                             cardactions.Add(btnTasks);
                             CardAction btnIssues = new CardAction()
-                        {
-                            Type = ActionTypes.PostBack,
-                            Title = "Issues",
-                            Value = "show a list of " + ProjectName + " issues",
-                            Text = "show a list of " + ProjectName + " issues"
-                        };
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Issues",
+                                Value = "show a list of " + ProjectName + " issues",
+                                Text = "show a list of " + ProjectName + " issues"
+                            };
                             cardactions.Add(btnIssues);
                             CardAction btnRisks = new CardAction()
-                        {
-                            Type = ActionTypes.PostBack,
-                            Title = "Risks",
-                            Value = "Show risks and the assigned resources of " + ProjectName,
-                            Text = "Show risks and the assigned resources of " + ProjectName,
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Risks",
+                                Value = "Show risks and the assigned resources of " + ProjectName,
+                                Text = "Show risks and the assigned resources of " + ProjectName,
 
-                        };
+                            };
                             cardactions.Add(btnRisks);
                             CardAction btnDeliverables = new CardAction()
-                        {
-                            Type = ActionTypes.PostBack,
-                            Title = "Deliverables",
-                            Value = "Show " + ProjectName + " deliverables",
-                            Text = "Show " + ProjectName + " deliverables",
-                        };
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Deliverables",
+                                Value = "Show " + ProjectName + " deliverables",
+                                Text = "Show " + ProjectName + " deliverables",
+                            };
                             cardactions.Add(btnDeliverables);
                             CardAction btnAssignments = new CardAction()
-                        {
-                            Type = ActionTypes.PostBack,
-                            Title = "Assignments",
-                            Value = "get " + ProjectName + " assignments",
-                            Text = "get " + ProjectName + " assignments",
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Assignments",
+                                Value = "get " + ProjectName + " assignments",
+                                Text = "get " + ProjectName + " assignments",
 
-                        };
+                            };
                             cardactions.Add(btnAssignments);
                             CardAction btnMilestones = new CardAction()
-                        {
-                            Type = ActionTypes.PostBack,
-                            Title = "Milestones",
-                            Value = "get " + ProjectName + " milestones",
-                            Text = "get " + ProjectName + " milestones",
+                            {
+                                Type = ActionTypes.PostBack,
+                                Title = "Milestones",
+                                Value = "get " + ProjectName + " milestones",
+                                Text = "get " + ProjectName + " milestones",
 
-                        };
+                            };
                             cardactions.Add(btnMilestones);
 
                             HeroCard plCard = new HeroCard()
@@ -1460,13 +1460,13 @@ namespace Common
             Uri endpointUri = null;
             int RCounter = 0;
 
-          
+
             using (var client = new WebClient())
             {
                 client.Headers.Add("X-FORMS_BASED_AUTH_ACCEPTED", "f");
                 client.Credentials = credentials;
                 client.Headers.Add(HttpRequestHeader.ContentType, "application/json;odata=verbose");
-                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");               
+                client.Headers.Add(HttpRequestHeader.Accept, "application/json;odata=verbose");
                 if (GetUserGroup("Web Administrators (Project Web App Synchronized)") || GetUserGroup("Administrators for Project Web App") || GetUserGroup("Portfolio Managers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Portfolio Viewers for Project Web App") || GetUserGroup("Resource Managers for Project Web App"))
                 {
                     endpointUri = new Uri(webUri + AdminAPI);
@@ -1474,16 +1474,16 @@ namespace Common
                     var t = JToken.Parse(responce);
                     JObject results = JObject.Parse(t["d"].ToString());
                     List<JToken> jArrays = ((Newtonsoft.Json.Linq.JContainer)((Newtonsoft.Json.Linq.JContainer)t["d"]).First).First.ToList();
-                    reply = GetAllResourceAssignments(dialogContext,SIndex, jArrays, out RCounter);
+                    reply = GetAllResourceAssignments(dialogContext, SIndex, jArrays, out RCounter);
                 }
             }
             Counter = RCounter;
             return reply;
 
-       
-          
+
+
         }
-        public IMessageActivity GetAllResourceAssignments(IDialogContext dialogContext, int SIndex , List<JToken> jArrays, out int RCounter)
+        public IMessageActivity GetAllResourceAssignments(IDialogContext dialogContext, int SIndex, List<JToken> jArrays, out int RCounter)
         {
             IMessageActivity reply = null;
             reply = dialogContext.MakeMessage();
@@ -1522,14 +1522,14 @@ namespace Common
 
             }
 
-           
+
 
 
 
 
             return reply;
         }
-        
+
         public IMessageActivity TotalCountGeneralMessage(IDialogContext dialogContext, int SIndex, int Counter, string ListName)
         {
             IMessageActivity reply = null;
@@ -1909,9 +1909,9 @@ namespace Common
                 query = query.Substring(0, query.IndexOf("at index"));
             if (totalCount > 10)
             {
-                
 
-              
+
+
                 for (int i = 0; i < pagenumber; i++)
                 {
                     string CurrentNumber = Convert.ToString(i);
@@ -2281,7 +2281,7 @@ namespace Common
                     {
                         Type = ActionTypes.PostBack,
                         Title = "Sub Projects",
-                        Value = "get all projects where program id is "+ProgramID,
+                        Value = "get all projects where program id is " + ProgramID,
                         //  DisplayText = "show a list of " + ProjectName + " tasks",
                         Text = "get all projects where program id is " + ProgramID,
 
@@ -2352,7 +2352,7 @@ namespace Common
                         Subtitle = SubtitleVal,
                         Images = cardImages,
                         Buttons = cardactions,
-                     //   Tap = btnTasks,
+                        //   Tap = btnTasks,
                     };
                     reply.Attachments.Add(plCard.ToAttachment());
                 }

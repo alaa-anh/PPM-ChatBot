@@ -42,18 +42,19 @@ namespace Common
 
                 int ProjectCounter = 0;
 
-                if (GetUserGroup(context, "Team Members (Project Web App Synchronized)") || GetUserGroup(context, "Team Leads for Project Web App"))
-                {
-                    //   reply = GetResourceLoggedInProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
-                }
-                else if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
+                //if (GetUserGroup(context, "Team Members (Project Web App Synchronized)") || GetUserGroup(context, "Team Leads for Project Web App"))
+                //{
+                //    //   reply = GetResourceLoggedInProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
+                //}
+                //                else 
+                if (GetUserGroup(context, "Project Managers (Project Web App Synchronized)"))
                 {
                     context.Load(context.Projects);
                     context.ExecuteQuery();
                     ProjectCollection projectDetails = context.Projects;
                     reply = GetLoggedInPMProjects(dialogContext, context, projectDetails, SIndex, showCompletion, ProjectDates, PDuration, projectManager, out ProjectCounter);
                 }
-                else if (GetUserGroup(context, "Web Administrators (Project Web App Synchronized)") || GetUserGroup(context, "Administrators for Project Web App") || GetUserGroup(context, "Portfolio Managers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Resource Managers for Project Web App"))
+                else if (GetUserGroup(context, "Administrators for Project Web App"))//if (GetUserGroup(context, "Web Administrators (Project Web App Synchronized)") || GetUserGroup(context, "Administrators for Project Web App") || GetUserGroup(context, "Portfolio Managers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Portfolio Viewers for Project Web App") || GetUserGroup(context, "Resource Managers for Project Web App"))
                 {
                     context.Load(context.Projects);
                     context.ExecuteQuery();
